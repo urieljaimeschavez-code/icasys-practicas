@@ -200,6 +200,16 @@ test("Contrato SQL de la aplicación sobre emulación PostgreSQL y Storage priva
     return { r, b };
   }
   try {
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      const { r, b } = await req("login", "student", {
+        email: "student@example.test",
+        password: "incorrecta",
+      });
+      assert.equal(r.status, 401, JSON.stringify(b));
+      const counters = await pool.query("SELECT failures FROM login_attempts");
+      assert.equal(counters.rows.length, 2);
+      assert.ok(counters.rows.every((row) => row.failures === attempt));
+    }
     for (const u of ["student", "advisor", "other"]) {
       const { r, b } = await req("login", u, {
         email: u + "@example.test",
