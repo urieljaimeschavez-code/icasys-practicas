@@ -1,0 +1,1173 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Documentación de prácticas profesionales ICASYS</title><style>
+ *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:#14233b;background:#f4f7fc;font:15px/1.75 Arial,sans-serif}aside{width:255px;position:fixed;inset:0 auto 0 0;background:#073570;color:white;padding:35px 24px;overflow:auto}aside strong{font-size:25px}aside p{font-size:13px;color:#c0d5f1}aside a{display:block;padding:11px 0;border-bottom:1px solid #ffffff20;color:#e4eeff;text-decoration:none;font-size:13px}main{margin-left:255px;max-width:1250px;padding:45px 50px}.intro{background:white;border:1px solid #e0e8f5;border-radius:16px;padding:35px;margin-bottom:32px}.intro h1{font-size:32px;line-height:1.25;color:#073570;margin:0 0 20px}article{background:white;padding:40px;border:1px solid #e0e8f5;border-radius:16px;margin-bottom:35px;scroll-margin-top:25px}h1{font-size:28px;line-height:1.35;margin-top:0}h2{font-size:21px;margin-top:35px;color:#073570}h3{font-size:17px;margin-top:28px}p,li{overflow-wrap:anywhere}table{width:100%;border-collapse:collapse;font-size:12px;line-height:1.6;margin:20px 0}th{text-align:left;background:#eef4fc;color:#073570}th,td{border:1px solid #e0e6f0;padding:10px;vertical-align:top}pre{white-space:pre-wrap;overflow-wrap:anywhere;padding:20px;background:#f2f5fa;border-radius:8px;font-size:12px;line-height:1.6}code{font-family:Consolas,monospace}a{color:#0055b8}.section-label{font-size:11px;text-transform:uppercase;color:#647a99;letter-spacing:1.2px;margin-bottom:14px}.intro small{color:#60738f}.note{padding:15px 20px;background:#eff5ff;border-radius:8px}img{max-width:100%}@media(max-width:850px){aside{position:static;width:100%;padding:20px}aside a{display:inline-block;margin-right:15px}main{margin:0;padding:20px}article{padding:24px}}@media print{body{background:white;font-size:10pt}aside{display:none}main{margin:0;padding:0;max-width:none}.intro,article{padding:0;border:0;border-radius:0;box-shadow:none}.intro{margin-bottom:1cm}article{break-before:page}h1,h2,h3{break-after:avoid}tr{break-inside:avoid}pre{font-size:8pt}th,td{padding:6px}a{color:inherit;text-decoration:none}@page{size:A4;margin:1.8cm}}
+ </style></head><body><aside><strong>ICASYS</strong><p>Documentación del sistema<br>Versión 3.0 · Noviembre de 2026</p><a href="#estado">Estado actual</a><a href="#nube">Conectar Supabase</a><a href="#usuario">Manual de usuario</a><a href="#instalacion">Instalación y operación</a><a href="#tecnico">Manual técnico</a><a href="#datos">Modelo de datos</a><a href="#pruebas">Requerimientos y pruebas</a><a href="#residencia">Documento base de residencia</a><p>Los documentos fuente editables se encuentran en la carpeta docs.</p></aside><main><section class="intro"><div class="section-label">Proyecto de residencia profesional</div><h1>Documentación del sistema de prácticas profesionales</h1><p>Guías para utilizar, instalar, mantener y evaluar la aplicación con cuentas individuales y base de datos. Incluye el expediente técnico y una base editable para el informe académico.</p><p class="note">Para guardar o imprimir este expediente, usa Ctrl + P y selecciona Guardar como PDF. La versión académica final requiere completar los datos de la institución, el periodo y los asesores.</p><small>Conexión Supabase verificada · 1 de noviembre de 2026</small></section><article id="estado"><div class="section-label">ICASYS · Estado actual</div><h1>Estado de la instalación ICASYS</h1>
+<p>Actualizado el 1 de noviembre de 2026, hora de Ciudad de México.</p>
+<h2>Instalación conectada</h2>
+<ul>
+<li>Motor activo en .env: postgres.</li>
+<li>PostgreSQL Supabase: conexión TLS con certificado verificado.</li>
+<li>Certificado: prod-ca-2021.crt; su ruta se configuró en PG_CA_FILE.</li>
+<li>Esquema ICASYS: disponible y comprobado.</li>
+<li>Storage: depósito de evidencias comprobado como privado.</li>
+<li>Servidor Node.js: disponible localmente en <a href="http://127.0.0.1:4173">http://127.0.0.1:4173</a>.</li>
+</ul>
+<p>La base está en la nube. La aplicación Node todavía corre en la computadora del residente; no se ha publicado una URL accesible desde otros equipos ni se ha modificado la página institucional.</p>
+<h2>Migración realizada</h2>
+<p>Se creó un respaldo consistente de SQLite antes de importar. Se conservaron el archivo original y el respaldo en data/respaldos. Se copió el contenido a un destino Supabase vacío y después se verificaron los conteos:</p>
+<table>
+<thead>
+<tr>
+<th>Entidad</th>
+<th align="right">Origen SQLite</th>
+<th align="right">Destino PostgreSQL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Usuarios</td>
+<td align="right">3</td>
+<td align="right">3</td>
+</tr>
+<tr>
+<td>Estancias</td>
+<td align="right">1</td>
+<td align="right">1</td>
+</tr>
+<tr>
+<td>Actividades</td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td>Revisiones</td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td>Evidencias</td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+</tbody></table>
+<p>La base SQLite no contenía actividades ni archivos. Los registros de la primera maqueta guardados en el navegador no formaban parte de esta base ni se importaron como aprobaciones autenticadas.</p>
+<p>La importación conservó los hashes de contraseña de las cuentas existentes. No se copiaron sesiones ni intentos de ingreso. Se registró un evento sqlite_import_completed en PostgreSQL; la auditoría previa permanece en la copia SQLite.</p>
+<h2>Comprobación real de acceso</h2>
+<p>Se verificó mediante la API real de la aplicación el ingreso de administrador, asesor y practicante con sus credenciales temporales. Los tres devolvieron el perfil correcto y la obligación de cambiar la contraseña. Todas las sesiones de comprobación se cerraron. No se cambiaron contraseñas ni se crearon actividades ficticias.</p>
+<p>Los valores privados permanecen en .env y data/accesos-iniciales.txt, excluidos de publicación y control de versiones. No se incluyen en este expediente.</p>
+<h2>Próximas comprobaciones con el usuario</h2>
+<ol>
+<li>Entrar personalmente a cada cuenta y cambiar la contraseña temporal.</li>
+<li>Revisar datos de la estancia y nombres de los responsables.</li>
+<li>Registrar una actividad y evidencia con el practicante; solicitar corrección y aprobar con el asesor.</li>
+<li>Confirmar la actividad, revisión y evidencia en Supabase, además de CSV y PDF.</li>
+<li>Definir y probar respaldos de PostgreSQL y archivos privados. El respaldo SQLite conserva el estado previo, no las nuevas operaciones en la nube.</li>
+<li>Preparar la publicación del servidor Node para acceso por enlace desde otros equipos, con HTTPS y variables secretas.</li>
+</ol>
+<p>Los manuales con referencias a versión 2.0 describen la instalación local anterior. SUPABASE.md documenta la configuración v3; este archivo registra el estado real más reciente. No es necesario repetir cloud:init ni cloud:import en una base que ya tiene usuarios.</p>
+</article><article id="nube"><div class="section-label">ICASYS · Conectar Supabase</div><h1>Conectar ICASYS con Supabase</h1>
+<p>Versión 3.0 preparada el 26 de octubre de 2026.</p>
+<h2>Estado actual</h2>
+<p><strong>Actualización del 1 de noviembre de 2026:</strong> la conexión real fue verificada, DB_DRIVER se cambió a postgres y se importaron las 3 cuentas y 1 estancia locales. Storage permanece privado. Consulta ESTADO_ACTUAL.md. La aplicación todavía se ejecuta localmente y no ha sido publicada. Los pasos siguientes se conservan como guía para una nueva instalación; no deben repetirse sobre la base que ya tiene usuarios.</p>
+<p>Las pruebas de SQL emulado no certifican TLS, políticas, bloqueos ni permisos del proyecto real. Esas comprobaciones son parte de la conexión y aceptación posteriores.</p>
+<h2>1 Crear el proyecto</h2>
+<p>En <a href="https://supabase.com/">https://supabase.com/</a> crea tu cuenta e inicia sesión personalmente. Crea un proyecto nuevo llamado <strong>icasys-practicas</strong> con el plan gratuito. Selecciona la organización de tu cuenta y una región adecuada. Define y conserva la contraseña de la base de datos de forma privada. Espera a que termine de prepararse.</p>
+<p>No es necesario comprar un dominio ni introducir datos de pago para esta configuración del proyecto gratuito. Si la plataforma ofrece un plan de pago o te solicita un compromiso adicional, revisa la opción elegida antes de continuar.</p>
+<h2>2 Crear tablas y depósito privado</h2>
+<p>En <strong>SQL Editor</strong> ejecuta, en orden, el contenido de estos archivos del proyecto:</p>
+<ol>
+<li>supabase/01-schema.sql</li>
+<li>supabase/02-storage.sql</li>
+</ol>
+<p>El primero crea el esquema privado <strong>icasys</strong> con usuarios, estancias, actividades, metadatos de evidencias, revisiones, sesiones, intentos de acceso, auditoría y diario de cargas. No crea cuentas de aplicación ni contiene contraseñas. Al consultar tablas desde Table Editor, selecciona el esquema icasys en lugar de public.</p>
+<p>El segundo crea el depósito <strong>icasys-evidencias</strong>, marcado como privado, con límite de 2 MB y los tipos permitidos. No crea políticas de acceso público. Si el depósito ya existía no cambia su configuración; el diagnóstico verificará que sea privado.</p>
+<p>No agregues icasys a los esquemas expuestos por Data API. No concedas lectura de las tablas a anon ni authenticated. Los usuarios de nuestra aplicación no son usuarios de Supabase Auth: se conserva el ingreso existente de Node.js con contraseñas derivadas y roles propios. No se crea un segundo sistema de autenticación.</p>
+<h2>3 Configurar credenciales solo en el servidor</h2>
+<p>Copia .env.example como <strong>.env</strong> en la raíz del proyecto. Este archivo está excluido del control de versiones y de las rutas públicas. Llénalo personalmente, sin pegar credenciales en el chat ni en capturas:</p>
+<pre><code class="language-dotenv">DB_DRIVER=postgres
+DATABASE_URL=postgresql://USUARIO:CONTRASENA@HOST:5432/postgres
+PG_CA_FILE=C:/ruta/privada/certificado-raiz.crt
+SUPABASE_URL=https://REFERENCIA.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=CLAVE_PRIVADA_SERVICE_ROLE
+SUPABASE_STORAGE_BUCKET=icasys-evidencias
+PORT=4173
+HOST=127.0.0.1
+APP_ORIGIN=http://127.0.0.1:4173
+COOKIE_SECURE=0
+</code></pre>
+<p><strong>DATABASE_URL:</strong> en el botón Connect del proyecto copia la conexión de <strong>Session pooler</strong>, normalmente en puerto 5432. Es adecuada para este servidor Node persistente y puede funcionar desde redes IPv4. Copia el usuario y host exactos que muestre tu proyecto. Sustituye la contraseña localmente; si contiene símbolos reservados, codifícala para una URL. No uses la URL de Data API en este campo.</p>
+<p><strong>PG_CA_FILE:</strong> descarga el certificado raíz de la base desde la configuración SSL del proyecto si el certificado no está en las autoridades confiables del runtime. La ruta debe existir en el equipo que ejecuta Node; en el servicio publicado será otra ruta. No se desactiva la validación TLS ni se usa rejectUnauthorized:false. El controlador retira parámetros sslmode de la URL para que no reemplacen la configuración de validación.</p>
+<p><strong>SUPABASE_URL:</strong> origen HTTPS del proyecto, sin rutas. <strong>SUPABASE_SERVICE_ROLE_KEY:</strong> clave privada legacy service_role del proyecto para Storage; no es anon ni publishable. Solo el servidor la utiliza, después de autorizar cada solicitud. La clave tiene privilegios elevados y no debe agregarse a app.js, index.html, repositorios ni variables públicas. Si se usa una clave secreta de formato diferente, debe verificarse compatibilidad con Storage antes de cambiar el tipo documentado.</p>
+<p>Si aún no tienes estos valores, conserva DB_DRIVER=sqlite. No uses credenciales ficticias como si la migración ya estuviera conectada.</p>
+<h2>4 Instalar y comprobar</h2>
+<p>En otro equipo instala Node.js 24 y ejecuta npm install. En este equipo las dependencias ya se instalaron con pnpm y existe un archivo de bloqueo pnpm-lock.yaml. Para reproducir las versiones exactas usa pnpm install --frozen-lockfile.</p>
+<p>Ejecuta:</p>
+<pre><code class="language-powershell">npm run cloud:check
+</code></pre>
+<p>Debe confirmar conexión PostgreSQL con validación TLS, tablas presentes y depósito privado. El diagnóstico no imprime claves ni cadenas de conexión. Si falla, revisa archivo .env, estado del proyecto, contraseña, certificado y scripts SQL. No desactives TLS para resolverlo.</p>
+<h2>5 Elegir una inicialización</h2>
+<p>Elige <strong>una</strong> de estas opciones en una base de destino vacía. No se sobrescriben usuarios existentes.</p>
+<h3>Conservar registros locales</h3>
+<p>Primero respalda la instalación SQLite y detén las escrituras durante la copia. La importación lee el archivo local sin modificarlo. Luego ejecuta:</p>
+<pre><code class="language-powershell">npm run cloud:import
+</code></pre>
+<p>Copia usuarios y hashes de contraseña, estancias, actividades, revisiones y archivos al depósito privado. Las contraseñas actuales siguen funcionando. No copia sesiones ni intentos de acceso. La auditoría anterior permanece en el respaldo local y se registra un evento de importación en la nube. No borres el respaldo.</p>
+<p>La importación sube archivos antes de confirmar los registros SQL. Si una carga o transacción falla, no presenta éxito; las cargas quedan registradas en storage_uploads para revisión. No se borran automáticamente documentos. Antes de reintentar revisa la causa y el destino.</p>
+<h3>Crear una instalación nueva</h3>
+<p>Si no deseas copiar datos locales:</p>
+<pre><code class="language-powershell">npm run cloud:init
+</code></pre>
+<p>Crea las tres cuentas iniciales y una estancia de evaluación. Las contraseñas temporales se guardan en <strong>data/accesos-nube.txt</strong>, nunca en pantalla pública. Cada titular debe cambiarlas personalmente al ingresar. No ejecutes este comando si vas a usar cloud:import.</p>
+<h2>6 Iniciar y probar</h2>
+<p>Inicia con INICIAR.cmd o npm start. La terminal debe indicar <strong>Motor: postgres</strong>. Si falla la nube no cambia silenciosamente a SQLite.</p>
+<p>Prueba acceso con los tres perfiles, cambio de contraseña, registro, corrección, aprobación, descarga de evidencias y reportes. Consulta las filas en Supabase y confirma que las evidencias no sean accesibles mediante una URL pública. Reinicia Node y verifica que se conserven los datos.</p>
+<p>Comando de auditoría de cargas sin confirmación:</p>
+<pre><code class="language-powershell">npm run cloud:storage-audit
+</code></pre>
+<p>Es de solo lectura y no elimina objetos. Al reemplazar una evidencia se conserva el objeto privado anterior hasta una limpieza controlada; puede ocupar cuota adicional. La tabla evidence apunta únicamente al archivo actual. El diario detecta cargas sin confirmación, no todos los objetos históricos reemplazados.</p>
+<h2>7 Respaldos en nube</h2>
+<p>El comando npm run backup corresponde a SQLite y no debe confundirse con un respaldo Supabase. En nube hay dos componentes separados: PostgreSQL y Storage. Un volcado de las tablas no incluye los bytes de los archivos.</p>
+<p>Define un procedimiento de copia PostgreSQL con pg_dump o las herramientas admitidas por el plan contratado y una copia independiente de los archivos privados. Prueba la restauración en otro proyecto antes de confiar en el procedimiento. No se han configurado respaldos automáticos ni se afirma que el plan gratuito los incluya. El archivo local SQLite conservado permite recuperar el punto previo a la migración, no la actividad posterior en nube.</p>
+<h2>8 Publicar la aplicación posteriormente</h2>
+<p>La base de datos en nube no publica por sí sola la interfaz Node. Para que los asesores entren desde otros equipos falta alojar el servidor en un servicio compatible y configurar sus secretos. Se incluye un Dockerfile como preparación; no se ha construido ni desplegado una imagen en esta etapa.</p>
+<p>En ese servicio utiliza HOST=0.0.0.0, COOKIE_SECURE=1 y APP_ORIGIN con la dirección HTTPS exacta del sitio. El puerto será el que asigne el proveedor. Conserva DATABASE_URL y la clave privada solo en las variables secretas del servidor. La conexión PostgreSQL valida el certificado. No ejecutes la app con .env dentro de una imagen pública.</p>
+<h2>Arquitectura de la versión preparada</h2>
+<pre><code class="language-text">Navegador → Servidor Node.js → PostgreSQL Supabase (esquema icasys)
+                       └──→ Storage Supabase (depósito privado)
+</code></pre>
+<p>Las evidencias se descargan a través de nuestra API, que comprueba la cuenta y estancia y verifica su SHA-256. No se devuelve una URL pública ni la clave de servicio al navegador.</p>
+<h2>Referencias</h2>
+<ul>
+<li><a href="https://supabase.com/docs/guides/database/connecting-to-postgres">https://supabase.com/docs/guides/database/connecting-to-postgres</a></li>
+<li><a href="https://supabase.com/docs/guides/storage/security/access-control">https://supabase.com/docs/guides/storage/security/access-control</a></li>
+<li><a href="https://node-postgres.com/features/transactions">https://node-postgres.com/features/transactions</a></li>
+<li><a href="https://node-postgres.com/features/ssl">https://node-postgres.com/features/ssl</a></li>
+</ul>
+</article><article id="usuario"><div class="section-label">ICASYS · Manual de usuario</div><h1>Manual de usuario</h1>
+<p><strong>Sistema de seguimiento de prácticas profesionales · ICASYS</strong><br>Versión 2.0 · 18 de octubre de 2026 · Entorno local de evaluación</p>
+<h2>1. Para qué sirve</h2>
+<p>El sistema centraliza actividades, horas, evidencias y revisiones de una estancia profesional. Cada usuario ingresa con su propia cuenta. Las horas pendientes y las horas aprobadas se muestran por separado. Solo una aprobación del asesor asignado suma al avance.</p>
+<h2>2. Ingresar por primera vez</h2>
+<ol>
+<li>Inicia el servidor con INICIAR.cmd y deja la ventana abierta.</li>
+<li>Abre <a href="http://127.0.0.1:4173">http://127.0.0.1:4173</a> en tu navegador.</li>
+<li>Ingresa el correo y la contraseña temporal entregados por el administrador.</li>
+<li>La primera vez se solicitará cambiar la contraseña. Escribe la temporal, una nueva y su confirmación.</li>
+<li>La nueva contraseña debe tener entre 12 y 128 caracteres, mayúscula, minúscula y número. No uses la misma contraseña temporal.</li>
+<li>Al guardar, se abrirá tu portal. Si no tienes una estancia asignada, aparecerá un mensaje para solicitarla al administrador.</li>
+</ol>
+<p>Las cuentas iniciales son <a href="mailto:admin@icasys.local">admin@icasys.local</a>, <a href="mailto:asesor@icasys.local">asesor@icasys.local</a> y <a href="mailto:practicante@icasys.local">practicante@icasys.local</a>. Sus contraseñas se generan individualmente en data/accesos-iniciales.txt al primer inicio. No son cuentas de correo reales ni cuentas del sitio de ICASYS.</p>
+<h2>3. Elementos comunes</h2>
+<ul>
+<li>Inicio: resumen de la estancia, horas y avance.</li>
+<li>Mis prácticas / Revisar actividades: bitácora con búsqueda por título y filtro de estado.</li>
+<li>Mis reportes: resumen por estancia y exportaciones.</li>
+<li>Mi cuenta: permite cambiar tu contraseña. Esto cierra las otras sesiones de tu cuenta.</li>
+<li>Actualizar datos: consulta los últimos cambios del servidor, por ejemplo después de que tu asesor apruebe una entrega.</li>
+<li>Cerrar sesión: invalida la sesión actual. Para probar otro perfil, cierra e inicia con otra cuenta.</li>
+</ul>
+<p>Una sesión dura hasta ocho horas. En un equipo compartido utiliza Cerrar sesión al terminar. Las pestañas del mismo navegador comparten sesión: para pruebas simultáneas usa navegadores o perfiles separados.</p>
+<h2>4. Administrador</h2>
+<h3>4.1 Crear una cuenta</h3>
+<p>En Usuarios, pulsa Crear usuario. Captura nombre, correo, perfil y contraseña temporal. El correo debe ser único. Entrega la contraseña al titular por un medio privado. El usuario tendrá que cambiarla al primer ingreso.</p>
+<p>Los perfiles son Practicante, Asesor y Administrador. El rol no se cambia desde la edición para evitar que las asignaciones existentes pierdan consistencia. Para un nuevo rol crea una cuenta con correo distinto y revisa las asignaciones.</p>
+<h3>4.2 Editar o desactivar</h3>
+<p>En Usuarios, pulsa Editar. Puedes modificar nombre, correo y estado. Si capturas una nueva contraseña temporal, la anterior deja de funcionar y se cierran las sesiones del titular. El sistema no muestra contraseñas actuales.</p>
+<p>Desactivar una cuenta bloquea nuevos ingresos y cierra sesiones existentes. El historial no se elimina. No puedes desactivar tu propia cuenta.</p>
+<h3>4.3 Registrar una estancia</h3>
+<ol>
+<li>Crea primero la cuenta del practicante y la del asesor, ambas activas.</li>
+<li>En Gestionar estancias, pulsa Nueva estancia.</li>
+<li>Selecciona al practicante y al asesor por sus cuentas.</li>
+<li>Captura institución educativa, proyecto, fechas y horas requeridas.</li>
+<li>Guarda la estancia. Al iniciar sesión, el practicante la encontrará en su portal y el asesor en su lista de asignaciones.</li>
+</ol>
+<p>Las horas requeridas pueden estar entre 1 y 2000 en incrementos de media hora. El periodo debe ser válido. Cuando ya existen actividades, no se puede cambiar al titular ni excluir sus fechas al editar el periodo. Se puede reasignar el asesor; las revisiones anteriores conservan el nombre de quien las realizó.</p>
+<h3>4.4 Consultar historial</h3>
+<p>Historial del sistema muestra los últimos 200 eventos: ingresos, cambios de contraseña, gestión de usuarios, estancias y actividades. Las fechas de auditoría están en UTC, identificadas en la tabla. No se registran contraseñas ni el contenido de archivos en el historial.</p>
+<h2>5. Practicante</h2>
+<h3>5.1 Registrar una actividad</h3>
+<ol>
+<li>Abre Mis prácticas y, si tienes varias estancias propias, selecciona la correcta.</li>
+<li>Pulsa Registrar actividad.</li>
+<li>Captura nombre, fecha, horas y descripción. Explica el trabajo y el resultado.</li>
+<li>Opcionalmente adjunta un PDF, PNG, JPG o TXT de hasta 2 MB.</li>
+<li>Guarda un borrador para continuar después o pulsa Enviar al asesor.</li>
+</ol>
+<p>La descripción requiere entre 15 y 3000 caracteres. Cada actividad acepta entre 0.5 y 12 horas en incrementos de media hora. La fecha debe pertenecer al periodo de tu estancia y no puede ser futura. La suma de actividades enviadas del mismo día y estancia no puede superar 12 horas. Los borradores no suman al avance ni son visibles para el asesor.</p>
+<h3>5.2 Estados</h3>
+<table>
+<thead>
+<tr>
+<th>Estado</th>
+<th>Qué significa</th>
+<th>Qué puedes hacer</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Borrador</td>
+<td>Todavía no se entrega</td>
+<td>Editar y enviar</td>
+</tr>
+<tr>
+<td>En revisión</td>
+<td>Entregada al asesor</td>
+<td>Consultar y esperar revisión</td>
+</tr>
+<tr>
+<td>Corrección</td>
+<td>El asesor solicita ajustes</td>
+<td>Leer comentario, editar y reenviar</td>
+</tr>
+<tr>
+<td>Aprobada</td>
+<td>Horas validadas</td>
+<td>Consultar y descargar evidencia</td>
+</tr>
+</tbody></table>
+<p>No se editan actividades en revisión ni aprobadas. Esta regla evita modificar una entrega después de su revisión.</p>
+<h3>5.3 Atender una corrección</h3>
+<p>Abre Ver detalle de la actividad con estado Corrección. Lee el historial, pulsa Editar y reenviar, modifica lo solicitado y envía. Puedes conservar la evidencia anterior sin seleccionar otro archivo; elegir uno nuevo la reemplaza. Las horas se sumarán solo después de aprobarse.</p>
+<p>El historial conserva decisiones y comentarios, pero no guarda copias completas de cada versión del texto o archivo. No se ofrece eliminación de actividades en esta versión.</p>
+<h2>6. Asesor</h2>
+<p>Solo aparecen las estancias asignadas a tu cuenta y las actividades entregadas de esos practicantes.</p>
+<ol>
+<li>Abre Revisar actividades y selecciona la estancia.</li>
+<li>Filtra En revisión y pulsa Revisar.</li>
+<li>Lee descripción, horas e historial. Descarga la evidencia si existe.</li>
+<li>Para aprobar, agrega un comentario opcional y pulsa Aprobar horas.</li>
+<li>Para solicitar cambios, escribe una indicación de al menos 10 caracteres y pulsa Solicitar corrección.</li>
+</ol>
+<p>Una actividad aprobada deja de estar pendiente; pulsar nuevamente desde una pestaña desactualizada no duplicará las horas. Si recibes un aviso de versión modificada, cierra el detalle, actualiza los datos y revisa otra vez.</p>
+<h2>7. Reportes</h2>
+<p>En Mis reportes se muestran nombre del practicante, proyecto, asesor, periodo, horas aprobadas, horas en revisión, meta y avance. El porcentaje se redondea al entero más cercano y su indicador se limita a 100%; las horas aprobadas siguen mostrándose completas.</p>
+<ul>
+<li>Descargar CSV produce una tabla para Excel y otros programas. Si Excel no separa columnas, usa Datos → Desde texto/CSV y selecciona UTF-8 y delimitador coma.</li>
+<li>Imprimir / PDF abre la función de impresión del navegador. Selecciona Guardar como PDF. El formato impreso oculta la navegación del portal.</li>
+</ul>
+<p>El reporte es de seguimiento y no sustituye una constancia oficial ni incluye firma electrónica.</p>
+<h2>8. Problemas frecuentes</h2>
+<table>
+<thead>
+<tr>
+<th>Mensaje o situación</th>
+<th>Acción</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>El navegador rechaza la conexión</td>
+<td>Ejecuta INICIAR.cmd y revisa la dirección y el puerto</td>
+</tr>
+<tr>
+<td>Correo o contraseña incorrectos</td>
+<td>Revisa la cuenta; pide restablecimiento al administrador si es necesario</td>
+</tr>
+<tr>
+<td>Demasiados intentos</td>
+<td>Espera 15 minutos; no sigas intentando contraseñas</td>
+</tr>
+<tr>
+<td>Sin estancia asignada</td>
+<td>Pide al administrador que registre la asignación correcta</td>
+</tr>
+<tr>
+<td>No aparecen horas nuevas</td>
+<td>Pulsa Actualizar datos; comprueba que estén aprobadas</td>
+</tr>
+<tr>
+<td>Archivo rechazado</td>
+<td>Revisa tamaño, extensión y contenido real del archivo</td>
+</tr>
+<tr>
+<td>La actividad cambió</td>
+<td>Actualiza datos antes de volver a editar o revisar</td>
+</tr>
+<tr>
+<td>Sesión vencida</td>
+<td>Inicia sesión nuevamente</td>
+</tr>
+</tbody></table>
+<p>La información ahora se guarda en el servidor: limpiar el navegador no elimina actividades. La carpeta data del servidor sí debe conservarse y respaldarse.</p>
+</article><article id="instalacion"><div class="section-label">ICASYS · Instalación y operación</div><h1>Manual de instalación y operación</h1>
+<p>Versión 2.0 · Entorno validado: Windows y Node.js 24.19.0</p>
+<h2>Requisitos</h2>
+<ul>
+<li>Node.js 24.x (el proyecto utiliza el módulo integrado node:sqlite; no se garantiza compatibilidad con otras versiones).</li>
+<li>Navegador moderno con cookies habilitadas.</li>
+<li>Permiso de lectura y escritura en la carpeta del proyecto y data.</li>
+<li>Puerto local 4173 disponible. No se requiere instalar dependencias npm.</li>
+</ul>
+<p>Node.js 24 incorpora node:sqlite, que puede mostrar avisos experimentales según su versión. Se mantiene el runtime validado como requisito del proyecto; una actualización debe pasar de nuevo las pruebas.</p>
+<h2>Instalación en este equipo</h2>
+<p>La carpeta es C:\Users\Lenovo\OneDrive\Documentos\ChatGPT\Proyecto ICASIS.</p>
+<p>Haz doble clic en INICIAR.cmd. El archivo utiliza primero el runtime disponible en el perfil del usuario; si no existe, intenta usar node del PATH. Mantén su terminal abierta y entra a <a href="http://127.0.0.1:4173">http://127.0.0.1:4173</a>.</p>
+<p>Si ya hay una instancia ejecutándose en segundo plano, la nueva indicará que el puerto está en uso. No inicies un segundo servidor para la misma base. No detengas procesos de Node sin comprobar que pertenecen a este proyecto.</p>
+<h2>Instalación en otro equipo</h2>
+<ol>
+<li>Instala Node.js 24 desde su sitio oficial.</li>
+<li>Copia el código del proyecto. Para una instalación nueva no copies data ni accesos de otra persona.</li>
+<li>Abre una terminal en la carpeta y ejecuta:</li>
+</ol>
+<pre><code class="language-powershell">node --version
+npm start
+</code></pre>
+<p>En el primer arranque se crea data/icasys.sqlite, el esquema y las tres cuentas iniciales. Las contraseñas aleatorias están en data/accesos-iniciales.txt. Cambia cada contraseña al ingresar; conserva el archivo solo mientras se entregan los accesos y retíralo después de manera controlada. El servidor nunca publica ese archivo.</p>
+<h2>Configuración</h2>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Predeterminado</th>
+<th>Uso</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>PORT</td>
+<td>4173</td>
+<td>Puerto HTTP local</td>
+</tr>
+<tr>
+<td>DATA_DIR</td>
+<td>carpeta data del proyecto</td>
+<td>Ubicación de la base y configuración inicial</td>
+</tr>
+<tr>
+<td>COOKIE_SECURE</td>
+<td>sin activar</td>
+<td>Con valor 1 exige envío de cookie por HTTPS</td>
+</tr>
+</tbody></table>
+<p>Ejemplo de evaluación en otro puerto:</p>
+<pre><code class="language-powershell">$env:PORT = &#39;4180&#39;
+node server.cjs
+</code></pre>
+<p>La aplicación escucha exclusivamente en 127.0.0.1. No está expuesta a Internet ni a la red local. El modo HTTPS requiere un proxy o infraestructura de despliegue y no forma parte del arranque local. No actives COOKIE_SECURE en una demostración HTTP, porque el navegador puede impedir que funcione la sesión.</p>
+<h2>Arranque y parada</h2>
+<p>Si ejecutaste desde terminal, Ctrl + C detiene el servidor. Antes de reiniciar confirma que no haya formularios en envío. Los datos se conservan. Si el servidor fue iniciado en segundo plano por una herramienta, identifica su proceso y ruta antes de detener únicamente esa instancia.</p>
+<h2>Respaldo</h2>
+<p>Ejecuta desde la carpeta del proyecto:</p>
+<pre><code class="language-powershell">npm run backup
+</code></pre>
+<p>El respaldo consistente se guarda en data/respaldos/icasys-FECHA.sqlite. Incluye usuarios, hashes de contraseña, sesiones, estancias, actividades, evidencias, revisiones y auditoría. No se limita a copiar el archivo principal mientras hay escrituras: usa la API de respaldo de SQLite.</p>
+<p>Los respaldos son privados. Guarda una copia protegida fuera de la computadora y prueba su restauración periódicamente. La frecuencia y retención deben acordarse con el responsable; se propone un respaldo por jornada de uso y antes de cambios al sistema. No se configuraron automatizaciones.</p>
+<h2>Restauración controlada</h2>
+<ol>
+<li>Detén el servidor y confirma que nadie está trabajando.</li>
+<li>Conserva la carpeta data actual con otro nombre o una copia en una ubicación protegida. No la borres.</li>
+<li>Crea una nueva carpeta data-restaurada y coloca el respaldo con nombre icasys.sqlite dentro de ella.</li>
+<li>Inicia apuntando DATA_DIR a la nueva carpeta, sin superponer archivos -wal o -shm de otra base:</li>
+</ol>
+<pre><code class="language-powershell">$env:DATA_DIR = &#39;C:\ruta\del\proyecto\data-restaurada&#39;
+node server.cjs
+</code></pre>
+<ol start="5">
+<li>Verifica ingreso, estancias, actividades y descarga de evidencias. Los accesos serán los vigentes al momento del respaldo; usa una contraseña conocida de esa fecha.</li>
+<li>Para un incidente de seguridad invalida sesiones del respaldo antes de reanudar acceso y aplica restablecimientos con el responsable técnico.</li>
+</ol>
+<p>No hay recuperación automática por correo. Un administrador activo puede restablecer la cuenta desde Usuarios. Si se pierde el acceso a todos los administradores, corresponde una intervención técnica controlada y respaldada; no se elimina la base para recrear accesos.</p>
+<h2>Pruebas y actualización</h2>
+<p>Ejecuta npm test antes de entregar una actualización. Las pruebas crean sus propias bases en tests/tmp-* y no usan la información del usuario. La primera versión del esquema está en lib/schema.sql y PRAGMA user_version=1. Cambios futuros requieren migraciones incrementales con copia previa; CREATE TABLE IF NOT EXISTS no sustituye una migración de columnas.</p>
+<h2>Entrega y publicación institucional</h2>
+<p>Para la evaluación local entrega código, manuales y una instalación nueva con cuentas de evaluación. No distribuyas bases con información personal ni archivos de accesos. Una publicación institucional requiere acuerdo de infraestructura, HTTPS, configuración de proxy y cookies, revisión de permisos de archivos, política de datos y retención, respaldo externo y pruebas de concurrencia y carga acordes al uso previsto. No se declara lista para producción pública por haber pasado las pruebas locales.</p>
+<p>La carpeta actual está bajo OneDrive. SQLite usa archivos WAL durante la operación; no se debe depender de una sincronización de archivos en uso como respaldo. Para operación institucional usa almacenamiento local del servidor fuera de carpetas sincronizadas y el procedimiento de respaldo consistente.</p>
+</article><article id="tecnico"><div class="section-label">ICASYS · Manual técnico</div><h1>Manual técnico</h1>
+<p>Sistema de seguimiento de prácticas profesionales ICASYS · Versión 2.0</p>
+<h2>1. Decisión tecnológica</h2>
+<p>Se eligió Node.js 24 porque la interfaz existente ya estaba construida en JavaScript y puede conservarse, el residente conoce esta tecnología y el entorno disponible permite ejecutar el sistema sin instalar dependencias adicionales. Se utiliza SQLite como motor relacional real, con claves foráneas, restricciones, índices, transacciones y persistencia en disco.</p>
+<p>SQLite simplifica la instalación y el traslado para la evaluación académica. No se eligió por afirmar que sustituye cualquier infraestructura institucional: si aumenta significativamente el uso concurrente se deberá evaluar PostgreSQL o MySQL y adaptar la capa de persistencia. Las llamadas síncronas de SQLite son una limitación de escalabilidad del diseño actual. El transporte HTTP y el enrutamiento están implementados con módulos estándar de Node, sin framework externo.</p>
+<p>Fuentes técnicas: <a href="https://nodejs.org/docs/latest-v24.x/api/sqlite.html">https://nodejs.org/docs/latest-v24.x/api/sqlite.html</a> y <a href="https://nodejs.org/docs/latest-v24.x/api/crypto.html">https://nodejs.org/docs/latest-v24.x/api/crypto.html</a>. La implementación y las pruebas se ejecutaron con Node.js 24.19.0; los detalles de la API deben contrastarse con esa rama al mantener el proyecto.</p>
+<h2>2. Arquitectura</h2>
+<figure style="margin:24px 0;break-inside:avoid"><svg xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Arquitectura del sistema con separación entre navegador servidor y persistencia" viewBox="0 0 760 345" style="width:100%;font-family:Arial,sans-serif"><defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#5480b2"/></marker></defs><rect x="10" y="25" width="205" height="70" rx="10" fill="#eef4fc" stroke="#a8c3e6"/><text x="112.5" y="50" text-anchor="middle" font-size="14" font-weight="bold" fill="#073570">Navegador</text><text x="112.5" y="71" text-anchor="middle" font-size="11" fill="#506580">HTML · CSS · JavaScript</text><rect x="275" y="25" width="205" height="70" rx="10" fill="#eef4fc" stroke="#a8c3e6"/><text x="377.5" y="50" text-anchor="middle" font-size="14" font-weight="bold" fill="#073570">Servidor Node.js</text><text x="377.5" y="71" text-anchor="middle" font-size="11" fill="#506580">API y sesión</text><rect x="540" y="25" width="205" height="70" rx="10" fill="#eef4fc" stroke="#a8c3e6"/><text x="642.5" y="50" text-anchor="middle" font-size="14" font-weight="bold" fill="#073570">SQLite</text><text x="642.5" y="71" text-anchor="middle" font-size="11" fill="#506580">Persistencia relacional</text><polyline points="215,60 275,60" fill="none" stroke="#5480b2" stroke-width="1.6" marker-end="url(#arr)"/><text x="245" y="46" text-anchor="middle" font-size="11" fill="#506580">HTTP JSON</text><polyline points="480,60 540,60" fill="none" stroke="#5480b2" stroke-width="1.6" marker-end="url(#arr)"/><text x="510" y="46" text-anchor="middle" font-size="11" fill="#506580">SQL</text><rect x="275" y="145" width="205" height="70" rx="10" fill="#eef4fc" stroke="#a8c3e6"/><text x="377.5" y="170" text-anchor="middle" font-size="14" font-weight="bold" fill="#073570">Validación y permisos</text><text x="377.5" y="191" text-anchor="middle" font-size="11" fill="#506580">Rol y estancia asignada</text><polyline points="377,95 377,145" fill="none" stroke="#5480b2" stroke-width="1.6" marker-end="url(#arr)"/><rect x="540" y="145" width="205" height="70" rx="10" fill="#eef4fc" stroke="#a8c3e6"/><text x="642.5" y="170" text-anchor="middle" font-size="14" font-weight="bold" fill="#073570">Expediente</text><text x="642.5" y="191" text-anchor="middle" font-size="11" fill="#506580">Actividades · Archivos · Revisiones</text><polyline points="642,95 642,145" fill="none" stroke="#5480b2" stroke-width="1.6" marker-end="url(#arr)"/><rect x="540" y="265" width="205" height="60" rx="10" fill="#eef4fc" stroke="#a8c3e6"/><text x="642.5" y="300" text-anchor="middle" font-size="14" font-weight="bold" fill="#073570">Respaldo consistente</text><polyline points="642,215 642,265" fill="none" stroke="#5480b2" stroke-width="1.6" marker-end="url(#arr)"/></svg><figcaption style="font-size:12px;color:#60738f;margin-top:10px">Arquitectura del sistema con separación entre navegador servidor y persistencia</figcaption></figure>
+<p>El navegador no contiene las contraseñas ni decide los permisos efectivos. app.js presenta los datos autorizados y realiza solicitudes a la API. server.cjs autentica, comprueba el rol y la asignación de la estancia, valida y ejecuta consultas parametrizadas. lib contiene persistencia, autenticación y validadores reutilizables. El modelo SQL está separado en lib/schema.sql.</p>
+<h2>3. Matriz de autorización</h2>
+<table>
+<thead>
+<tr>
+<th>Operación</th>
+<th>Practicante</th>
+<th>Asesor</th>
+<th>Administrador</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Consultar estancias</td>
+<td>Propias</td>
+<td>Asignadas</td>
+<td>Todas</td>
+</tr>
+<tr>
+<td>Consultar actividades</td>
+<td>Propias</td>
+<td>Asignadas, excepto borradores</td>
+<td>Todas</td>
+</tr>
+<tr>
+<td>Crear / editar actividades</td>
+<td>Propias; edición solo borrador/corrección</td>
+<td>No</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Aprobar / pedir corrección</td>
+<td>No</td>
+<td>Solo asignadas y en revisión</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Descargar evidencia</td>
+<td>Propia</td>
+<td>Asignada y entregada</td>
+<td>Todas</td>
+</tr>
+<tr>
+<td>Crear / editar estancias</td>
+<td>No</td>
+<td>No</td>
+<td>Sí</td>
+</tr>
+<tr>
+<td>Gestionar usuarios</td>
+<td>No</td>
+<td>No</td>
+<td>Sí</td>
+</tr>
+<tr>
+<td>Consultar auditoría</td>
+<td>No</td>
+<td>No</td>
+<td>Sí</td>
+</tr>
+<tr>
+<td>Cambiar contraseña propia</td>
+<td>Sí</td>
+<td>Sí</td>
+<td>Sí</td>
+</tr>
+</tbody></table>
+<p>La interfaz solo muestra opciones de su perfil, pero la barrera real está en el servidor. Alterar JavaScript o enviar IDs de otras estancias no concede autorización. Una cuenta inactiva pierde acceso y sus sesiones quedan revocadas. El administrador no aprueba horas: se mantiene la revisión con el asesor responsable.</p>
+<h2>4. Autenticación</h2>
+<ul>
+<li>Correo único sin distinción entre mayúsculas y minúsculas.</li>
+<li>Contraseñas entre 12 y 128 caracteres con mayúscula, minúscula y número.</li>
+<li>Derivación mediante scrypt, sal aleatoria de 16 bytes y resultado de 64 bytes. La base guarda sal y derivación, nunca la contraseña recuperable.</li>
+<li>Comprobación con timingSafeEqual. Se deriva una contraseña ficticia también cuando la cuenta no existe.</li>
+<li>Token de sesión aleatorio de 32 bytes; SQLite guarda únicamente su hash SHA-256. Cookie HttpOnly, SameSite=Strict, Path=/ y duración máxima de ocho horas.</li>
+<li>COOKIE_SECURE=1 permite añadir Secure para una instalación HTTPS. La evaluación local utiliza HTTP en loopback.</li>
+<li>Token CSRF por sesión y validación de Origin para escrituras. No se habilita CORS.</li>
+<li>Diez intentos fallidos bloquean durante 15 minutos por origen de conexión y correo. Los contadores se conservan en base de datos.</li>
+<li>Al cambiar o restablecer contraseña se revocan las sesiones anteriores. El cambio de contraseña crea una sesión nueva.</li>
+<li>Contraseña inicial temporal obligatoria. Sin completarla solo se permiten consulta de sesión, cambio de contraseña y salida.</li>
+</ul>
+<p>Las sesiones comparten cookie entre pestañas del mismo navegador y origen. No hay acceso simultáneo a tres perfiles mediante un selector. Se debe cerrar sesión o utilizar perfiles de navegador separados.</p>
+<h2>5. Reglas de actividades</h2>
+<figure style="margin:24px 0;break-inside:avoid"><svg xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Estados de una actividad y responsables de las transiciones" viewBox="0 0 760 290" style="width:100%;font-family:Arial,sans-serif"><defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#5480b2"/></marker></defs><rect x="5" y="40" width="165" height="65" rx="10" fill="#eef4fc" stroke="#a8c3e6"/><text x="87.5" y="65" text-anchor="middle" font-size="14" font-weight="bold" fill="#073570">Borrador</text><text x="87.5" y="86" text-anchor="middle" font-size="11" fill="#506580">Practicante</text><rect x="225" y="40" width="165" height="65" rx="10" fill="#eef4fc" stroke="#a8c3e6"/><text x="307.5" y="65" text-anchor="middle" font-size="14" font-weight="bold" fill="#073570">En revisión</text><text x="307.5" y="86" text-anchor="middle" font-size="11" fill="#506580">Asesor asignado</text><rect x="590" y="40" width="165" height="65" rx="10" fill="#eef4fc" stroke="#a8c3e6"/><text x="672.5" y="65" text-anchor="middle" font-size="14" font-weight="bold" fill="#073570">Aprobada</text><text x="672.5" y="86" text-anchor="middle" font-size="11" fill="#506580">Suma al avance</text><rect x="400" y="190" width="175" height="65" rx="10" fill="#eef4fc" stroke="#a8c3e6"/><text x="487.5" y="215" text-anchor="middle" font-size="14" font-weight="bold" fill="#073570">Corrección</text><text x="487.5" y="236" text-anchor="middle" font-size="11" fill="#506580">Practicante corrige</text><polyline points="170,72 225,72" fill="none" stroke="#5480b2" stroke-width="1.6" marker-end="url(#arr)"/><text x="195" y="58" text-anchor="middle" font-size="11" fill="#506580">enviar</text><polyline points="390,72 590,72" fill="none" stroke="#5480b2" stroke-width="1.6" marker-end="url(#arr)"/><text x="490" y="58" text-anchor="middle" font-size="11" fill="#506580">aprobar</text><polyline points="307,105 307,222 400,222" fill="none" stroke="#5480b2" stroke-width="1.6" marker-end="url(#arr)"/><text x="309" y="160" text-anchor="middle" font-size="11" fill="#506580">solicitar ajustes</text><polyline points="487,190 487,140 345,140 345,105" fill="none" stroke="#5480b2" stroke-width="1.6" marker-end="url(#arr)"/><text x="447" y="130" text-anchor="middle" font-size="11" fill="#506580">reenviar</text><polyline points="400,240 88,240 88,105" fill="none" stroke="#5480b2" stroke-width="1.6" marker-end="url(#arr)"/><text x="216" y="258" text-anchor="middle" font-size="11" fill="#506580">guardar borrador</text></svg><figcaption style="font-size:12px;color:#60738f;margin-top:10px">Estados de una actividad y responsables de las transiciones</figcaption></figure>
+<p>Una actividad admite título de 1 a 120 caracteres, descripción de 15 a 3000, horas de 0.5 a 12 en pasos de 0.5 y fecha válida dentro de la estancia, no futura según America/Mexico_City. Las actividades enviadas de la misma estancia y fecha no superan 12 horas acumuladas; borradores no entran en ese cálculo. Estas reglas son propuestas de operación que ICASYS debe validar.</p>
+<p>El campo version aumenta al modificar o revisar. Las solicitudes de actualización incluyen la versión consultada; una discrepancia responde 409 para evitar sobrescribir otra edición o revisar dos veces la misma entrega. Las escrituras y su auditoría se ejecutan en transacciones.</p>
+<p>El avance es ROUND(horas aprobadas / meta × 100), limitado visualmente a 100%. Las horas reales no se recortan. Revisar dos veces no duplica registros de horas: el total se deriva de actividades con estado approved, no de sumas manuales acumuladas.</p>
+<h2>6. Evidencias y reportes</h2>
+<p>La carga utiliza JSON con contenido Base64 y un máximo de solicitud de 3 MB. Se limita cada archivo a 2 MB. Se valida nombre, extensión y firma básica de PDF, PNG y JPG, o texto UTF-8 sin bytes nulos para TXT. Esto no equivale a un análisis antivirus. Se almacena BLOB, MIME, tamaño y SHA-256 en evidence. La descarga pasa por autenticación y autorización, utiliza Content-Disposition: attachment y X-Content-Type-Options: nosniff.</p>
+<p>Reemplazar una evidencia conserva únicamente la versión actual del archivo. El historial guarda decisiones y comentarios, no instantáneas de todos los textos o archivos anteriores. No hay eliminación de actividades en la interfaz.</p>
+<p>CSV e impresión se generan en el navegador con los datos autorizados recibidos del servidor. CSV escapa comillas y prefija apóstrofo cuando una celda comienza con =, +, @ o -, para evitar la interpretación directa como fórmula. El PDF se obtiene con la impresión del navegador, no mediante un generador de documentos del servidor. No se incluyen firmas o validez oficial.</p>
+<h2>7. API</h2>
+<p>Todas las rutas devuelven JSON salvo la descarga de evidencias. Las escrituras utilizan Content-Type: application/json, Origin del mismo servidor y X-CSRF-Token (excepto login, que no exige token CSRF pero sí Origin). Los ejemplos describen estructura, no contienen contraseñas reales.</p>
+<table>
+<thead>
+<tr>
+<th>Método y ruta</th>
+<th>Función</th>
+<th>Campos principales</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>POST /api/login</td>
+<td>Ingreso</td>
+<td>email, password</td>
+</tr>
+<tr>
+<td>GET /api/session</td>
+<td>Sesión actual</td>
+<td>Devuelve user y csrf</td>
+</tr>
+<tr>
+<td>POST /api/logout</td>
+<td>Salida</td>
+<td>Sin cuerpo obligatorio</td>
+</tr>
+<tr>
+<td>POST /api/password</td>
+<td>Cambio de contraseña</td>
+<td>current, password</td>
+</tr>
+<tr>
+<td>GET /api/state</td>
+<td>Expediente autorizado</td>
+<td>user, placements, activities y users (solo admin)</td>
+</tr>
+<tr>
+<td>POST /api/users</td>
+<td>Nueva cuenta</td>
+<td>name, email, role, password</td>
+</tr>
+<tr>
+<td>PUT /api/users/:id</td>
+<td>Editar / desactivar / restablecer</td>
+<td>name, email, active, password opcional</td>
+</tr>
+<tr>
+<td>POST /api/placements</td>
+<td>Nueva estancia</td>
+<td>student_id, advisor_id, school, project, start, end, target</td>
+</tr>
+<tr>
+<td>PUT /api/placements/:id</td>
+<td>Actualizar estancia</td>
+<td>Campos anteriores y version</td>
+</tr>
+<tr>
+<td>POST /api/activities</td>
+<td>Registro de actividad</td>
+<td>placement, title, description, date, hours, status, evidence opcional</td>
+</tr>
+<tr>
+<td>PUT /api/activities/:id</td>
+<td>Editar y reenviar</td>
+<td>Campos de actividad y version</td>
+</tr>
+<tr>
+<td>POST /api/activities/:id/review</td>
+<td>Revisar actividad</td>
+<td>status, comment, version</td>
+</tr>
+<tr>
+<td>GET /api/evidence/:activityId</td>
+<td>Descargar evidencia</td>
+<td>Cookie de sesión</td>
+</tr>
+<tr>
+<td>GET /api/audit</td>
+<td>Últimos 200 eventos</td>
+<td>Solo administrador</td>
+</tr>
+</tbody></table>
+<p>status usa draft/pending para entregas y approved/correction para revisiones. evidence al cargar es {name, url: data:MIME;base64,...}; una edición puede mantener la referencia /api/evidence/ID recibida previamente.</p>
+<p>Errores: 400 JSON inválido; 401 sin sesión o credenciales incorrectas; 403 permiso, origen o CSRF; 404 inexistente; 409 conflicto de versión, estado o duplicado; 413 tamaño; 415 tipo de contenido; 422 validación; 429 intentos de ingreso; 500 error interno sin exponer detalles SQL.</p>
+<h2>8. Operación y mantenimiento</h2>
+<p>El servidor expone index.html, app.js, styles.css, el logotipo y el expediente de documentación por una lista explícita. Código de servidor, bases, respaldos y accesos no se publican. Respuestas no se cachean. Se incluyen CSP y protección contra enmarcado; la política permite el estilo en línea usado por la interfaz y las fuentes externas de Google Fonts.</p>
+<p>Las claves foráneas están activas y SQLite usa WAL y busy_timeout. Las evidencias están dentro de la misma base para que el respaldo capture un expediente completo. backup.cjs usa la API de respaldo de SQLite; no basta copiar un archivo activo ignorando el WAL.</p>
+<p>Limitaciones conocidas: sin recuperación de contraseña por correo, MFA, verificación de correo, notificaciones, antivirus, auditoría externa inmutable, pruebas de alta carga o despliegue público. SQLite y scrypt usan operaciones síncronas en algunos caminos; se debe evaluar su desempeño antes de aumentar la escala. El archivo de base de datos no está cifrado en reposo. El control de acceso del sistema operativo y la protección de respaldos son parte de la operación.</p>
+</article><article id="datos"><div class="section-label">ICASYS · Modelo de datos</div><h1>Modelo y diccionario de datos</h1>
+<p>Motor: SQLite · Archivo: data/icasys.sqlite · Esquema reproducible: lib/schema.sql · Versión de esquema: 1.</p>
+<h2>Relaciones</h2>
+<figure style="margin:24px 0;break-inside:avoid"><svg xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Relaciones principales del modelo de datos con cardinalidades" viewBox="0 0 760 385" style="width:100%;font-family:Arial,sans-serif"><defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#5480b2"/></marker></defs><rect x="15" y="30" width="205" height="65" rx="10" fill="#eef4fc" stroke="#a8c3e6"/><text x="117.5" y="55" text-anchor="middle" font-size="14" font-weight="bold" fill="#073570">USERS</text><text x="117.5" y="76" text-anchor="middle" font-size="11" fill="#506580">Identidad y perfil</text><rect x="285" y="30" width="205" height="65" rx="10" fill="#eef4fc" stroke="#a8c3e6"/><text x="387.5" y="55" text-anchor="middle" font-size="14" font-weight="bold" fill="#073570">PLACEMENTS</text><text x="387.5" y="76" text-anchor="middle" font-size="11" fill="#506580">Practicante y asesor</text><rect x="550" y="30" width="205" height="65" rx="10" fill="#eef4fc" stroke="#a8c3e6"/><text x="652.5" y="55" text-anchor="middle" font-size="14" font-weight="bold" fill="#073570">ACTIVITIES</text><text x="652.5" y="76" text-anchor="middle" font-size="11" fill="#506580">Bitácora y horas</text><polyline points="220,62 285,62" fill="none" stroke="#5480b2" stroke-width="1.6" marker-end="url(#arr)"/><text x="252" y="47" text-anchor="middle" font-size="11" fill="#506580">1 a N</text><polyline points="490,62 550,62" fill="none" stroke="#5480b2" stroke-width="1.6" marker-end="url(#arr)"/><text x="520" y="47" text-anchor="middle" font-size="11" fill="#506580">1 a N</text><rect x="550" y="165" width="205" height="65" rx="10" fill="#eef4fc" stroke="#a8c3e6"/><text x="652.5" y="190" text-anchor="middle" font-size="14" font-weight="bold" fill="#073570">EVIDENCE</text><text x="652.5" y="211" text-anchor="middle" font-size="11" fill="#506580">Archivo actual</text><polyline points="652,95 652,165" fill="none" stroke="#5480b2" stroke-width="1.6" marker-end="url(#arr)"/><text x="702" y="135" text-anchor="middle" font-size="11" fill="#506580">1 a 0..1</text><rect x="285" y="165" width="205" height="65" rx="10" fill="#eef4fc" stroke="#a8c3e6"/><text x="387.5" y="190" text-anchor="middle" font-size="14" font-weight="bold" fill="#073570">REVIEWS</text><text x="387.5" y="211" text-anchor="middle" font-size="11" fill="#506580">Decisión y comentario</text><polyline points="600,95 600,130 387,130 387,165" fill="none" stroke="#5480b2" stroke-width="1.6" marker-end="url(#arr)"/><text x="482" y="121" text-anchor="middle" font-size="11" fill="#506580">1 a N</text><polyline points="115,95 115,197 285,197" fill="none" stroke="#5480b2" stroke-width="1.6" marker-end="url(#arr)"/><text x="196" y="183" text-anchor="middle" font-size="11" fill="#506580">autor 1 a N</text><rect x="15" y="300" width="205" height="65" rx="10" fill="#eef4fc" stroke="#a8c3e6"/><text x="117.5" y="325" text-anchor="middle" font-size="14" font-weight="bold" fill="#073570">SESSIONS</text><text x="117.5" y="346" text-anchor="middle" font-size="11" fill="#506580">Acceso temporal</text><rect x="285" y="300" width="205" height="65" rx="10" fill="#eef4fc" stroke="#a8c3e6"/><text x="387.5" y="325" text-anchor="middle" font-size="14" font-weight="bold" fill="#073570">AUDIT_LOG</text><text x="387.5" y="346" text-anchor="middle" font-size="11" fill="#506580">Trazabilidad</text><polyline points="70,95 70,300" fill="none" stroke="#5480b2" stroke-width="1.6" marker-end="url(#arr)"/><text x="41" y="264" text-anchor="middle" font-size="11" fill="#506580">1 a N</text><polyline points="170,95 170,270 387,270 387,300" fill="none" stroke="#5480b2" stroke-width="1.6" marker-end="url(#arr)"/><text x="274" y="260" text-anchor="middle" font-size="11" fill="#506580">1 a N</text></svg><figcaption style="font-size:12px;color:#60738f;margin-top:10px">Relaciones principales del modelo de datos con cardinalidades</figcaption></figure>
+<p>Un usuario tiene un rol único. Una estancia relaciona un practicante con un asesor; un usuario puede tener varias estancias. Cada actividad pertenece a una sola estancia. Cada actividad tiene cero o una evidencia actual y cero o muchas revisiones. No hay borrado en cascada de expedientes.</p>
+<h2>users</h2>
+<table>
+<thead>
+<tr>
+<th>Columna</th>
+<th>Tipo</th>
+<th>Regla / significado</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>id</td>
+<td>TEXT</td>
+<td>UUID o identificador inicial; clave primaria</td>
+</tr>
+<tr>
+<td>name</td>
+<td>TEXT</td>
+<td>Nombre del titular, obligatorio</td>
+</tr>
+<tr>
+<td>email</td>
+<td>TEXT</td>
+<td>Obligatorio, único, NOCASE</td>
+</tr>
+<tr>
+<td>role</td>
+<td>TEXT</td>
+<td>student, advisor o admin</td>
+</tr>
+<tr>
+<td>password_hash</td>
+<td>TEXT</td>
+<td>Sal hexadecimal y derivación scrypt separadas por dos puntos</td>
+</tr>
+<tr>
+<td>active</td>
+<td>INTEGER</td>
+<td>1 activo / 0 inactivo</td>
+</tr>
+<tr>
+<td>must_change</td>
+<td>INTEGER</td>
+<td>Obliga cambio de contraseña temporal</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>TEXT</td>
+<td>Fecha y hora UTC de creación</td>
+</tr>
+</tbody></table>
+<p>Las contraseñas se protegen con derivación criptográfica; no son cifradas de forma reversible. Las reglas de sintaxis y longitud se validan en servidor.</p>
+<h2>placements</h2>
+<table>
+<thead>
+<tr>
+<th>Columna</th>
+<th>Tipo</th>
+<th>Regla / significado</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>id</td>
+<td>TEXT</td>
+<td>Clave primaria</td>
+</tr>
+<tr>
+<td>student_id</td>
+<td>TEXT</td>
+<td>FK users.id; servidor exige perfil student activo</td>
+</tr>
+<tr>
+<td>advisor_id</td>
+<td>TEXT</td>
+<td>FK users.id; servidor exige perfil advisor activo</td>
+</tr>
+<tr>
+<td>school</td>
+<td>TEXT</td>
+<td>Institución educativa</td>
+</tr>
+<tr>
+<td>project</td>
+<td>TEXT</td>
+<td>Nombre del proyecto</td>
+</tr>
+<tr>
+<td>start / end</td>
+<td>TEXT</td>
+<td>Fechas ISO YYYY-MM-DD</td>
+</tr>
+<tr>
+<td>target</td>
+<td>REAL</td>
+<td>Horas requeridas, mayor que 0 y hasta 2000; aplicación exige mínimo 1</td>
+</tr>
+<tr>
+<td>version</td>
+<td>INTEGER</td>
+<td>Versión de edición para evitar sobrescritura</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>TEXT</td>
+<td>Registro UTC</td>
+</tr>
+</tbody></table>
+<p>Índices por student_id y advisor_id para filtrar expedientes. El rol de las referencias y los periodos se verifican en la aplicación, además de las FK del motor.</p>
+<h2>activities</h2>
+<table>
+<thead>
+<tr>
+<th>Columna</th>
+<th>Tipo</th>
+<th>Regla / significado</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>id</td>
+<td>TEXT</td>
+<td>Clave primaria</td>
+</tr>
+<tr>
+<td>placement_id</td>
+<td>TEXT</td>
+<td>FK placements.id</td>
+</tr>
+<tr>
+<td>title</td>
+<td>TEXT</td>
+<td>Nombre de actividad</td>
+</tr>
+<tr>
+<td>description</td>
+<td>TEXT</td>
+<td>Trabajo y resultados</td>
+</tr>
+<tr>
+<td>date</td>
+<td>TEXT</td>
+<td>Fecha de realización YYYY-MM-DD</td>
+</tr>
+<tr>
+<td>hours</td>
+<td>REAL</td>
+<td>Entre 0.5 y 12; media hora mínima en aplicación</td>
+</tr>
+<tr>
+<td>status</td>
+<td>TEXT</td>
+<td>draft, pending, correction, approved</td>
+</tr>
+<tr>
+<td>version</td>
+<td>INTEGER</td>
+<td>Control de actualización y revisión</td>
+</tr>
+<tr>
+<td>created_at / updated_at</td>
+<td>TEXT</td>
+<td>Marcas de tiempo UTC</td>
+</tr>
+</tbody></table>
+<p>Índice por placement_id. Horas aprobadas = SUM(hours) con status=&#39;approved&#39;. No hay campo acumulado independiente que pueda duplicarse al repetir una revisión.</p>
+<h2>evidence</h2>
+<table>
+<thead>
+<tr>
+<th>Columna</th>
+<th>Tipo</th>
+<th>Regla / significado</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>activity_id</td>
+<td>TEXT</td>
+<td>PK y FK activities.id; un archivo actual por actividad</td>
+</tr>
+<tr>
+<td>name</td>
+<td>TEXT</td>
+<td>Nombre original saneado</td>
+</tr>
+<tr>
+<td>mime</td>
+<td>TEXT</td>
+<td>Tipo comprobado en servidor</td>
+</tr>
+<tr>
+<td>content</td>
+<td>BLOB</td>
+<td>Bytes del archivo</td>
+</tr>
+<tr>
+<td>size</td>
+<td>INTEGER</td>
+<td>Máximo 2097152 bytes</td>
+</tr>
+<tr>
+<td>sha256</td>
+<td>TEXT</td>
+<td>Huella del contenido</td>
+</tr>
+</tbody></table>
+<p>No hay directorio público de archivos. La API valida acceso antes de devolver el BLOB. El hash es una huella, no una firma digital ni un análisis de seguridad del documento.</p>
+<h2>reviews</h2>
+<table>
+<thead>
+<tr>
+<th>Columna</th>
+<th>Tipo</th>
+<th>Regla / significado</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>id</td>
+<td>TEXT</td>
+<td>Clave primaria</td>
+</tr>
+<tr>
+<td>activity_id</td>
+<td>TEXT</td>
+<td>FK activities.id</td>
+</tr>
+<tr>
+<td>reviewer_id</td>
+<td>TEXT</td>
+<td>FK users.id; autor real de la revisión</td>
+</tr>
+<tr>
+<td>decision</td>
+<td>TEXT</td>
+<td>approved o correction</td>
+</tr>
+<tr>
+<td>comment</td>
+<td>TEXT</td>
+<td>Comentario o motivo</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>TEXT</td>
+<td>Momento UTC</td>
+</tr>
+</tbody></table>
+<p>La revisión queda vinculada a quien la realizó, aunque después se reasigne el asesor de la estancia.</p>
+<h2>sessions</h2>
+<table>
+<thead>
+<tr>
+<th>Columna</th>
+<th>Tipo</th>
+<th>Regla / significado</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>token_hash</td>
+<td>TEXT</td>
+<td>PK; SHA-256 del token de cookie</td>
+</tr>
+<tr>
+<td>user_id</td>
+<td>TEXT</td>
+<td>FK users.id</td>
+</tr>
+<tr>
+<td>csrf</td>
+<td>TEXT</td>
+<td>Token de protección de escrituras</td>
+</tr>
+<tr>
+<td>expires_at</td>
+<td>INTEGER</td>
+<td>Vencimiento Unix en milisegundos</td>
+</tr>
+</tbody></table>
+<p>Se eliminan sesiones al salir, cambiar o restablecer contraseña y desactivar la cuenta. Las sesiones vencidas no autorizan; se depuran al crear nuevas sesiones.</p>
+<h2>login_attempts</h2>
+<p>key (TEXT PK) es el hash del correo o la dirección de conexión para limitar intentos; failures es el contador y reset_at el final de la ventana de 15 minutos. No contiene contraseñas.</p>
+<h2>audit_log</h2>
+<p>id (INTEGER PK), user_id (FK users.id, opcional), action (TEXT), entity_id (TEXT, referencia operativa) y created_at (TEXT UTC). Conserva accesos y operaciones relevantes, sin copiar contraseñas o archivos. entity_id no es una FK porque se refiere a varias clases de entidad. La interfaz muestra los últimos 200 eventos; los anteriores permanecen en la base.</p>
+<h2>Integridad y respaldo</h2>
+<p>PRAGMA foreign_keys=ON, journal_mode=WAL y busy_timeout=5000. Las operaciones compuestas se ejecutan con BEGIN IMMEDIATE / COMMIT o ROLLBACK. El esquema utiliza consultas preparadas y no concatena entradas de usuario en SQL. Las reglas que dependen del usuario, fecha o suma diaria se verifican en el servidor.</p>
+<p>El esquema está principalmente normalizado: identidad en users, asignaciones en placements, hechos de trabajo en activities y revisiones separadas. El nombre del asesor y practicante se obtiene mediante JOIN, sin duplicarlo en cada actividad. Las evidencias actuales no tienen versionado histórico.</p>
+</article><article id="pruebas"><div class="section-label">ICASYS · Requerimientos y pruebas</div><h1>Requerimientos, trazabilidad y pruebas</h1>
+<p>Versión 2.0 · Fecha: 18 de octubre de 2026 · Evaluación local.</p>
+<h2>Actualización de preparación Supabase</h2>
+<p>El 26 de octubre de 2026 se agregaron pruebas del adaptador PostgreSQL, validación TLS, transacciones con un único cliente, almacenamiento privado y un recorrido API sobre PostgreSQL emulado con archivos ficticios. Estas pruebas no reemplazan la comprobación del proyecto Supabase real, de RLS, aislamiento, certificados y cuota. La conexión real está pendiente de la creación y configuración del proyecto del titular. Los resultados anteriores corresponden a la versión local.</p>
+<p>Ejecución conjunta de tests/system.test.cjs y tests/cloud.test.cjs: <strong>17 pruebas reportadas, 17 aprobadas y 0 fallidas</strong>. Incluye la regresión SQLite y las cuatro pruebas nuevas. Runtime utilizado en esta ejecución: Node.js 24.22.1. La prueba emulada valida el contrato SQL y recorrido API; no valida el servicio de Supabase real ni sustituye la aceptación posterior de la migración.</p>
+<h2>Requerimientos funcionales</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Requerimiento</th>
+<th>Criterio de aceptación</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>RF01</td>
+<td>Autenticación individual</td>
+<td>Cuenta válida abre su portal; cuenta inválida no ingresa</td>
+</tr>
+<tr>
+<td>RF02</td>
+<td>Cambio de contraseña</td>
+<td>Acceso inicial obliga a cambiar temporal; se revocan sesiones previas</td>
+</tr>
+<tr>
+<td>RF03</td>
+<td>Administración de usuarios</td>
+<td>Admin crea, edita, desactiva y restablece; otros perfiles no</td>
+</tr>
+<tr>
+<td>RF04</td>
+<td>Gestión de estancias</td>
+<td>Admin vincula cuentas activas de practicante y asesor</td>
+</tr>
+<tr>
+<td>RF05</td>
+<td>Registro y envío</td>
+<td>Practicante registra solo en sus estancias y con datos válidos</td>
+</tr>
+<tr>
+<td>RF06</td>
+<td>Evidencias</td>
+<td>Archivo permitido hasta 2 MB se conserva y descarga solo con permiso</td>
+</tr>
+<tr>
+<td>RF07</td>
+<td>Revisión</td>
+<td>Asesor asignado aprueba o pide corrección con comentario</td>
+</tr>
+<tr>
+<td>RF08</td>
+<td>Reenvío</td>
+<td>Solo borrador/corrección puede editarse; conserva historial</td>
+</tr>
+<tr>
+<td>RF09</td>
+<td>Avance</td>
+<td>Solo horas aprobadas suman; no se duplican por repetir una revisión</td>
+</tr>
+<tr>
+<td>RF10</td>
+<td>Reportes</td>
+<td>Resumen por estancia, CSV e impresión/PDF</td>
+</tr>
+<tr>
+<td>RF11</td>
+<td>Auditoría</td>
+<td>Administrador consulta eventos; otros no acceden</td>
+</tr>
+<tr>
+<td>RF12</td>
+<td>Persistencia y respaldo</td>
+<td>Datos y evidencias permanecen tras reinicio y en respaldo</td>
+</tr>
+</tbody></table>
+<h2>Requerimientos no funcionales</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Requerimiento</th>
+<th>Implementación / límite</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>RNF01</td>
+<td>Identidad visual</td>
+<td>Logotipo, paleta azul y estructura del portal de referencia</td>
+</tr>
+<tr>
+<td>RNF02</td>
+<td>Seguridad de acceso</td>
+<td>Scrypt, cookies HttpOnly, CSRF, verificación de asignaciones y bloqueo de intentos</td>
+</tr>
+<tr>
+<td>RNF03</td>
+<td>Integridad</td>
+<td>FK, restricciones, transacciones, versiones de edición y validación en servidor</td>
+</tr>
+<tr>
+<td>RNF04</td>
+<td>Portabilidad</td>
+<td>Node.js 24, SQLite, sin dependencias npm adicionales</td>
+</tr>
+<tr>
+<td>RNF05</td>
+<td>Usabilidad</td>
+<td>Etiquetas de formularios, mensajes de error y navegación adaptable</td>
+</tr>
+<tr>
+<td>RNF06</td>
+<td>Mantenibilidad</td>
+<td>Módulos separados, esquema SQL, pruebas automatizadas y manuales</td>
+</tr>
+</tbody></table>
+<p>No se establecieron ni midieron acuerdos de disponibilidad, capacidad concurrente o tiempos máximos para una operación institucional. Deben definirse antes de publicar; no se presentan como resultados ya alcanzados.</p>
+<h2>Pruebas automatizadas ejecutadas</h2>
+<p>Comando: node --test tests/system.test.cjs. Entorno: Windows, Node.js 24.19.0. Resultado de la ejecución: <strong>13 pruebas reportadas, 13 aprobadas, 0 fallidas</strong> (un contenedor de integración y 12 subpruebas). Los datos se crean en una base aislada tests/tmp-*.</p>
+<table>
+<thead>
+<tr>
+<th>Grupo</th>
+<th>Verificaciones</th>
+<th>Resultado</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Acceso anónimo y archivos internos</td>
+<td>Sin sesión recibe 401; archivos de servidor, credenciales, base y respaldo de maqueta no son públicos</td>
+<td>Aprobado</td>
+</tr>
+<tr>
+<td>Contraseña temporal</td>
+<td>Bloqueo hasta cambiarla, contraseña derivada en base y rotación de cookie</td>
+<td>Aprobado</td>
+</tr>
+<tr>
+<td>Asignaciones y CSRF</td>
+<td>Filtrado de estancias, rechazo de escritura sin token, otro origen y estancias ajenas</td>
+<td>Aprobado</td>
+</tr>
+<tr>
+<td>Validación y archivos</td>
+<td>Horas negativas/excesivas/fraccionamiento inválido, fechas imposibles/futuras, estado falso y PDF falso rechazados; TXT persiste y tiene acceso restringido</td>
+<td>Aprobado</td>
+</tr>
+<tr>
+<td>Corrección y aprobación</td>
+<td>Solo asesor asignado, comentario mínimo, reenvío, control de versión, bloqueo de doble aprobación y edición posterior</td>
+<td>Aprobado</td>
+</tr>
+<tr>
+<td>Revisiones simultáneas</td>
+<td>Dos solicitudes concurrentes producen una aprobación y un conflicto; se guarda una sola revisión</td>
+<td>Aprobado</td>
+</tr>
+<tr>
+<td>Borradores y auditoría</td>
+<td>Asesor no ve ni descarga borradores; auditoría solo admin</td>
+<td>Aprobado</td>
+</tr>
+<tr>
+<td>Usuarios y estancias</td>
+<td>Alta, correo duplicado, asignación, restricción de rol y revocación al desactivar</td>
+<td>Aprobado</td>
+</tr>
+<tr>
+<td>Respaldo</td>
+<td>Copia contiene actividad aprobada y bytes de evidencia</td>
+<td>Aprobado</td>
+</tr>
+<tr>
+<td>Salida</td>
+<td>La cookie anterior deja de autorizar</td>
+<td>Aprobado</td>
+</tr>
+<tr>
+<td>Intentos fallidos</td>
+<td>Bloqueo después de diez errores</td>
+<td>Aprobado</td>
+</tr>
+<tr>
+<td>Persistencia</td>
+<td>Reabrir SQLite conserva registros; integrity_check devuelve ok</td>
+<td>Aprobado</td>
+</tr>
+</tbody></table>
+<h2>Pruebas manuales y evidencia</h2>
+<p>En la maqueta anterior, el usuario confirmó registro, aprobación, suma de horas y CSV/PDF. Esa comprobación no se usa para afirmar que los tres nuevos perfiles ya fueron aceptados por ICASYS.</p>
+<p>En la versión 2.0 se revisó visualmente la nueva pantalla de ingreso en navegador. En una instancia aislada con cuentas ficticias se verificaron inicio y cierre de sesión, envío de una actividad desde el practicante, aprobación con otra cuenta de asesor, edición de estancia y visualización de Usuarios con administrador. Los permisos y flujos del servidor se verificaron con las pruebas anteriores. La aceptación final de los nuevos flujos completos corresponde al residente y sus asesores.</p>
+<h2>Guion de aceptación con los tres perfiles</h2>
+<ol>
+<li>Ingresa personalmente como administrador y cambia su contraseña temporal.</li>
+<li>Revisa Usuarios y Gestionar estancias. Confirma cuentas y asignación inicial.</li>
+<li>Cierra sesión. Ingresa como practicante y cambia su contraseña temporal.</li>
+<li>Registra una actividad de 2 horas y adjunta un TXT de prueba. Guarda primero como borrador, luego edita y envía.</li>
+<li>Cierra sesión. Ingresa como asesor y cambia su contraseña temporal.</li>
+<li>Solicita una corrección con comentario. Regresa al practicante, corrige y reenvía.</li>
+<li>Regresa al asesor y aprueba. Con el practicante confirma 2 horas aprobadas y el historial.</li>
+<li>Genera CSV y PDF desde Mis reportes. Compara los totales.</li>
+<li>Reinicia el servidor y verifica persistencia.</li>
+<li>Como admin crea un segundo practicante y asesor con una estancia diferente. Comprueba que no vean expedientes ajenos.</li>
+<li>Ejecuta el respaldo y prueba una restauración en otra carpeta, sin sobrescribir la original.</li>
+</ol>
+<p>Registrar fecha, evaluador, resultado y observaciones en una hoja de aceptación. No se han inventado firmas ni una aprobación institucional.</p>
+<h2>Pendientes antes de una entrega institucional</h2>
+<ul>
+<li>Confirmar reglas de horas y periodo con ICASYS y la universidad.</li>
+<li>Completar datos académicos y formato oficial del informe.</li>
+<li>Evaluar accesibilidad con usuarios reales, concurrencia y volumen de evidencias previsto.</li>
+<li>Definir política de datos, retención, operación, HTTPS y respaldo externo.</li>
+<li>Recabar aceptación de los tres perfiles y documentar incidencias reales.</li>
+</ul>
+</article><article id="residencia"><div class="section-label">ICASYS · Documento base de residencia</div><h1>Proyecto de residencia profesional</h1>
+<h2>Portada por completar</h2>
+<p><strong>Título:</strong> Desarrollo de un sistema web para la gestión y seguimiento de prácticas profesionales en ICASYS.</p>
+<ul>
+<li>Residente: [Nombre completo del alumno]</li>
+<li>Número de control: [Por completar]</li>
+<li>Institución educativa y carrera: [Por completar]</li>
+<li>Organización receptora: ICASYS [Confirmar denominación oficial]</li>
+<li>Asesor interno: [Por completar]</li>
+<li>Asesor externo: [Por completar]</li>
+<li>Periodo de residencia: [Por completar con fechas reales]</li>
+<li>Versión de software documentada: 2.0</li>
+</ul>
+<p>Este documento es una base editable del informe. Su estructura debe ajustarse al formato de la institución educativa. No acredita implementación en la página pública ni aceptación oficial del proyecto.</p>
+<h2>Resumen</h2>
+<p>El proyecto desarrolla una aplicación web independiente para registrar y dar seguimiento a estancias de prácticas profesionales. Incluye cuentas individuales de practicante, asesor y administrador, asignación de estancias, bitácora de actividades, evidencias, revisión, cálculo de horas aprobadas y reportes. El sistema utiliza Node.js y SQLite, conserva una identidad visual basada en el portal ICASYS y funciona localmente para su evaluación. La integración al sitio institucional constituye una etapa posterior sujeta a aprobación y revisión de infraestructura.</p>
+<h2>Planteamiento del problema</h2>
+<p>Se propone centralizar el seguimiento de actividades y horas de practicantes en un expediente accesible según responsabilidades. Sin un registro unificado de entregas y revisiones puede resultar difícil identificar qué actividades están pendientes, qué horas fueron validadas y cuáles requieren corrección.</p>
+<p>Lo anterior representa la necesidad que aborda la propuesta, no un diagnóstico confirmado de los procesos internos de ICASYS. Deben documentarse entrevistas con responsables, herramientas utilizadas actualmente, dificultades observadas y reglas operativas para sustentar el problema final. No se afirma que la organización carezca de otro sistema sin haberlo validado.</p>
+<h2>Justificación</h2>
+<p>Un expediente por estancia permite relacionar actividades, evidencias y decisiones del asesor, separar horas pendientes de aprobadas y generar un reporte consistente. Las cuentas individuales y la autorización en servidor sustituyen el cambio libre de perfiles del primer prototipo. La base de datos permite persistencia independiente del navegador y respaldos del expediente.</p>
+<p>Para la formación del residente, el proyecto integra análisis de requerimientos, diseño de datos, desarrollo de interfaz y servidor, autenticación, pruebas y documentación. La utilidad institucional deberá evaluarse con los responsables y usuarios previstos.</p>
+<h2>Objetivo general</h2>
+<p>Desarrollar y validar en un entorno de evaluación un sistema web con autenticación y base de datos para gestionar estancias profesionales, registrar actividades y evidencias, revisar entregas y consultar el avance de horas de los practicantes de ICASYS.</p>
+<h2>Objetivos específicos</h2>
+<ol>
+<li>Definir roles, requerimientos, reglas y alcance del seguimiento de estancias.</li>
+<li>Diseñar un modelo relacional para usuarios, asignaciones, actividades, evidencias y revisiones.</li>
+<li>Implementar cuentas individuales y permisos según rol y estancia asignada.</li>
+<li>Desarrollar registro, corrección, revisión y aprobación de actividades.</li>
+<li>Generar avances y reportes a partir de las horas aprobadas.</li>
+<li>Verificar autenticación, autorización, integridad y persistencia mediante pruebas.</li>
+<li>Elaborar manuales de usuario, instalación, operación y documentación técnica.</li>
+</ol>
+<h2>Alcance</h2>
+<p>Incluye operación local con tres perfiles, gestión de usuarios, asignación de estancias, bitácora con borradores, evidencias de hasta 2 MB, revisión e historial de comentarios, reportes CSV e impresión/PDF, auditoría y respaldo consistente.</p>
+<p>No incluye integración con la base institucional, publicación pública, migración automática de cuentas de ICASYS, firma electrónica, constancias oficiales, notificaciones, recuperación por correo, antivirus de archivos ni aprobación de liberación de residencia. Los datos iniciales son de evaluación y deben sustituirse por datos autorizados al formalizar el uso.</p>
+<h2>Marco técnico</h2>
+<p>La arquitectura cliente-servidor separa presentación de validación y persistencia. Node.js procesa solicitudes HTTP; SQLite conserva entidades relacionadas mediante claves foráneas y transacciones. Se utilizan consultas parametrizadas, contraseñas derivadas con sal, sesiones en cookie HttpOnly, control CSRF y autorización por asignación. El avance se calcula a partir de actividades aprobadas para evitar acumulaciones duplicadas.</p>
+<p>Las decisiones detalladas, fuentes de documentación oficial y limitaciones están en MANUAL_TECNICO.md. El modelo entidad-relación y diccionario se encuentran en BASE_DE_DATOS.md.</p>
+<h2>Metodología de desarrollo</h2>
+<p>Se siguió un desarrollo incremental: revisión visual del portal de referencia, definición del módulo de prácticas profesionales, construcción de una maqueta navegable, prueba de su flujo con el usuario y evolución a un sistema con persistencia y autenticación. La fase actual agrega controles en servidor, modelo SQL y pruebas de integración.</p>
+<p>Para el informe académico debe complementarse cada fase con fechas reales, decisiones revisadas por asesores y evidencias de trabajo. No se declara una metodología institucional específica ni ceremonias que no se realizaron.</p>
+<h2>Entregables y estado</h2>
+<table>
+<thead>
+<tr>
+<th>Entregable</th>
+<th>Estado</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Interfaz basada en el portal ICASYS</td>
+<td>Implementada</td>
+</tr>
+<tr>
+<td>API y base de datos relacional</td>
+<td>Implementadas</td>
+</tr>
+<tr>
+<td>Cuentas, sesiones y permisos</td>
+<td>Implementados y probados en servidor</td>
+</tr>
+<tr>
+<td>Gestión de usuarios y estancias</td>
+<td>Implementada</td>
+</tr>
+<tr>
+<td>Bitácora, evidencias y revisiones</td>
+<td>Implementadas</td>
+</tr>
+<tr>
+<td>CSV e impresión/PDF</td>
+<td>Implementados; requieren aceptación de versión final en interfaz</td>
+</tr>
+<tr>
+<td>Manuales y modelo de datos</td>
+<td>Entregados como documentos editables</td>
+</tr>
+<tr>
+<td>Pruebas de integración</td>
+<td>Ejecutadas con resultado aprobado</td>
+</tr>
+<tr>
+<td>Aceptación de ICASYS y escuela</td>
+<td>Pendiente</td>
+</tr>
+<tr>
+<td>Integración al sitio institucional</td>
+<td>Fuera de esta etapa</td>
+</tr>
+</tbody></table>
+<h2>Resultados verificables</h2>
+<p>El conjunto automatizado ejecutado reportó 13 pruebas aprobadas y ninguna fallida, incluyendo control de acceso, corrección y aprobación, evidencias restringidas, persistencia tras reapertura y respaldo de datos. La pantalla de acceso fue revisada visualmente. No se midieron mejoras porcentuales en productividad, tiempos administrativos ni satisfacción de usuarios; esas métricas requieren evaluación real.</p>
+<h2>Plan para cierre de residencia</h2>
+<ol>
+<li>Validar requerimientos y reglas con los asesores.</li>
+<li>Completar el guion de aceptación de los tres perfiles y registrar incidencias.</li>
+<li>Ajustar el sistema con resultados reales de esa evaluación.</li>
+<li>Completar portada, contexto de la empresa, cronograma real, evidencias y formato escolar.</li>
+<li>Entregar código, manuales, esquema de base de datos, pruebas y procedimiento de instalación.</li>
+<li>Obtener la evaluación y aceptación por las instancias correspondientes.</li>
+</ol>
+<p>El cronograma debe construirse con el periodo de residencia indicado por el alumno. No se asignan fechas ficticias para actividades ya realizadas.</p>
+<h2>Conclusiones de la etapa actual</h2>
+<p>Se dispone de una implementación local con persistencia relacional y acceso individual por responsabilidades. La siguiente validación consiste en utilizar los tres perfiles en escenarios completos, confirmar requisitos con ICASYS y adecuar el informe al formato académico. El estado funcional local no constituye por sí mismo una certificación de seguridad ni una autorización de despliegue institucional.</p>
+<h2>Anexos</h2>
+<ul>
+<li>MANUAL_USUARIO.md</li>
+<li>INSTALACION.md</li>
+<li>MANUAL_TECNICO.md</li>
+<li>BASE_DE_DATOS.md y lib/schema.sql</li>
+<li>PRUEBAS.md y tests/system.test.cjs</li>
+<li>Capturas de la versión implementada</li>
+<li>[Agregar acta de aceptación, entrevistas y evidencias reales cuando estén disponibles]</li>
+</ul>
+</article></main></body></html>

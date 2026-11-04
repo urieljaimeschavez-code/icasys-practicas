@@ -1,0 +1,30 @@
+{
+  "name": "icasys-practicas-profesionales",
+  "version": "3.0.0",
+  "private": true,
+  "description": "Sistema de seguimiento de prácticas profesionales con autenticación y base de datos",
+  "engines": {
+    "node": ">=24.0.0 <25"
+  },
+  "scripts": {
+    "start": "node server.cjs",
+    "test": "node --test tests/*.test.cjs",
+    "backup": "node backup.cjs",
+    "cloud:check": "node scripts/cloud-check.cjs",
+    "cloud:init": "node scripts/cloud-init.cjs",
+    "cloud:import": "node scripts/cloud-import.cjs",
+    "cloud:storage-audit": "node scripts/storage-audit.cjs",
+    "format": "prettier --write server.cjs lib/*.cjs scripts/*.cjs tests/*.cjs"
+  },
+  "dependencies": {
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "@babel/generator": "^8.0.6",
+    "@babel/parser": "^8.0.8",
+    "@babel/traverse": "^8.0.7",
+    "@babel/types": "^8.0.8",
+    "pg-mem": "^3.0.14",
+    "prettier": "^3.9.10"
+  }
+}

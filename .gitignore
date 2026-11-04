@@ -1,0 +1,12 @@
+data/
+*.log
+node_modules/
+tests/tmp-*/
+respaldo-maqueta/
+respaldo-v2/
+.env
+.env.*
+!.env.example
+*.crt
+*.pem
+.pnpm-store/

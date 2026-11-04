@@ -1,0 +1,11 @@
+.git
+.env
+.env.*
+data
+node_modules
+tests
+respaldo-maqueta
+respaldo-v2
+*.log
+*.crt
+*.pem
