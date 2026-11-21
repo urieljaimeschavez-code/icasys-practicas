@@ -3,7 +3,7 @@ PRAGMA journal_mode = WAL;
 CREATE TABLE IF NOT EXISTS users (
  id TEXT PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL COLLATE NOCASE UNIQUE,
  role TEXT NOT NULL CHECK(role IN ('student','advisor','admin')),
- password_hash TEXT NOT NULL, active INTEGER NOT NULL DEFAULT 1 CHECK(active IN (0,1)),
+ password_hash TEXT NOT NULL, auth_user_id TEXT UNIQUE, active INTEGER NOT NULL DEFAULT 1 CHECK(active IN (0,1)),
  must_change INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE IF NOT EXISTS placements (

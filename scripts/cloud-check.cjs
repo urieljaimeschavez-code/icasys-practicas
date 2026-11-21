@@ -16,6 +16,7 @@ const { connect, reportError } = require("./cloud-common.cjs");
     ])
       await db.prepare(`SELECT 1 FROM ${table} LIMIT 1`).all();
     const role = await db.prepare("SELECT current_user AS name").get();
+    await db.prepare("SELECT auth_user_id FROM users LIMIT 1").all();
     console.log(
       "PostgreSQL: conexión TLS validada y esquema ICASYS disponible.",
     );

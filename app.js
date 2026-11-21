@@ -65,8 +65,9 @@ async function forgotPasswordScreen(){
  modal('<h3>Recuperar contraseña</h3><p class="sub">Comprobando disponibilidad…</p>');
  try {
   const config=await api('recovery/config');
-  if(!config.enabled){$('#modal-content').innerHTML='<button class="close" aria-label="Cerrar">×</button><h3>Recuperar contraseña</h3><p>El envío por correo todavía no está configurado. Solicita al administrador una contraseña temporal desde Usuarios → Restablecer contraseña.</p>';$('.close').onclick=()=>$('#modal').close();return;}
+  if(!config.enabled){$('#modal-content').innerHTML='<button class="close" aria-label="Cerrar">×</button><h3>Recuperar contraseña</h3><p>La recuperación por correo todavía no está habilitada. Solicita al administrador una contraseña temporal desde Usuarios → Restablecer contraseña.</p>';$('.close').onclick=()=>$('#modal').close();return;}
   modal('<div class="modal-title"><h3>Recuperar contraseña</h3><p class="sub">Escribe el correo real registrado en tu cuenta. El enlace caduca en 20 minutos.</p></div><form id="recovery-request"><div class="field"><label for="recovery-email">Correo electrónico</label><input id="recovery-email" type="email" autocomplete="email" maxlength="180" required></div><p class="error" id="recovery-error" role="alert"></p><button class="btn" type="submit">Enviar enlace de recuperación</button></form><p class="sub" id="recovery-result" role="status"></p>');
+  if(config.provider==='supabase')$('#modal-content .sub').textContent='Escribe el correo real de tu cuenta vinculada a Supabase. Revisa el buzón y Spam; el enlace caduca según la configuración del portal.';
   $('#recovery-email').value=$('#login-email')?.value||'';
   $('#recovery-request').onsubmit=e=>{e.preventDefault();commit(e.submitter,'#recovery-error',async()=>{const r=await api('recovery/request','POST',{email:$('#recovery-email').value});$('#recovery-result').textContent=r.message;$('#recovery-request').hidden=true;})};
  }catch(error){$('#modal').close();toast(error.message);}
@@ -83,9 +84,28 @@ function passwordScreen(required=false){
  if(required){document.body.classList.remove('authenticated');$('#auth-content').innerHTML=html+'<button class="link-btn" id="back-login">Cerrar sesión</button>';$('#back-login').onclick=logout}else modal(html);
  $('#password-form').onsubmit=e=>{e.preventDefault();commit(e.submitter,'#password-error',async()=>{if($('#new-password').value!==$('#confirm-password').value)throw Error('Las contraseñas no coinciden.');const r=await api('password','POST',{current:$('#current-password').value,password:$('#new-password').value});csrf=r.csrf;if($('#modal').open)$('#modal').close();await enter();toast('Contraseña actualizada.')})};
 }
+
+async function accountScreen(){
+ try{
+  const config=await api('auth/config');
+  if(!config.enabled||currentUser.auth_linked)return passwordScreen(false);
+  modal('<div class="modal-title"><h3>Mi cuenta</h3><p class="sub">'+esc(currentUser.email)+'</p></div><p>Vincula tu cuenta con Supabase Auth para recuperar tu contraseña por correo. Se conservarán tu perfil, contraseña actual, actividades y horas.</p><p class="sub">Usa una dirección de correo real bajo tu control. El envío requiere que el administrador complete la configuración del correo en Supabase.</p><form id="auth-link-form"><div class="field"><label for="auth-link-password">Contraseña actual de ICASYS</label><input id="auth-link-password" type="password" autocomplete="current-password" minlength="12" maxlength="128" required></div><p class="error" id="auth-link-error" role="alert"></p><button class="btn" type="submit">Vincular mi cuenta con Supabase</button></form><p><button class="link-btn" id="account-password" type="button">Cambiar contraseña</button></p>');
+  $('#account-password').onclick=()=>{$('#modal').close();passwordScreen(false);};
+  $('#auth-link-form').onsubmit=e=>{e.preventDefault();commit(e.submitter,'#auth-link-error',async()=>{const r=await api('auth/link','POST',{current:$('#auth-link-password').value});currentUser=r.user;csrf=r.csrf;$('#modal').close();await load();toast('Cuenta vinculada. Conserva tu contraseña actual de ICASYS.');})};
+ }catch(error){toast(error.message);}
+}
+function recoveryHash(){
+ if(location.hash.startsWith('#supabase-recuperar/')){recoveryScreen(location.hash.slice(20));return true;}
+ if(location.hash.startsWith('#recuperar/')){recoveryScreen(location.hash.slice(11));return true;}
+ if(location.hash.includes('access_token=')||location.hash.includes('error_description=')){
+  history.replaceState(null,'',location.pathname+location.search);loginScreen('El enlace no corresponde a la plantilla de recuperación del portal. Solicita al administrador revisar la configuración de Supabase.');return true;
+ }
+ return false;
+}
+
 async function enter(){await load();document.body.classList.add('authenticated');$('#auth-content').innerHTML=''}
 async function logout(){try{await api('logout','POST')}catch(error){toast(error.message);return}loginScreen()}
-$('#logout').onclick=logout;$('#account').onclick=()=>passwordScreen(false);$('#refresh').onclick=e=>commit(e.currentTarget,'',load);$('#menu').onclick=()=>document.body.classList.toggle('menu-open');
-window.onhashchange=()=>{if(location.hash.startsWith('#recuperar/'))return recoveryScreen(location.hash.slice(11));view=['inicio','bitacora','reportes','gestion','usuarios','auditoria'].includes(location.hash.slice(1))?location.hash.slice(1):'inicio';if(['gestion','usuarios','auditoria'].includes(view)&&role!=='admin')view='inicio';document.body.classList.remove('menu-open');render();window.scrollTo(0,0)};
+$('#logout').onclick=logout;$('#account').onclick=accountScreen;$('#refresh').onclick=e=>commit(e.currentTarget,'',load);$('#menu').onclick=()=>document.body.classList.toggle('menu-open');
+window.onhashchange=()=>{if(recoveryHash())return;view=['inicio','bitacora','reportes','gestion','usuarios','auditoria'].includes(location.hash.slice(1))?location.hash.slice(1):'inicio';if(['gestion','usuarios','auditoria'].includes(view)&&role!=='admin')view='inicio';document.body.classList.remove('menu-open');render();window.scrollTo(0,0)};
 $('#modal').addEventListener('click',e=>{if(e.target===$('#modal')){const r=$('#modal').getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)$('#modal').close()}});
-async function init(){if(location.hash.startsWith('#recuperar/'))return recoveryScreen(location.hash.slice(11));try{const r=await api('session');currentUser=r.user;csrf=r.csrf;role=currentUser.role;view=location.hash.slice(1)||'inicio';if(currentUser.must_change)passwordScreen(true);else await enter()}catch(e){loginScreen(e.message==='Inicia sesión para continuar.'?'':e.message)}}init();
+async function init(){if(recoveryHash())return;try{const r=await api('session');currentUser=r.user;csrf=r.csrf;role=currentUser.role;view=location.hash.slice(1)||'inicio';if(currentUser.must_change)passwordScreen(true);else await enter()}catch(e){loginScreen(e.message==='Inicia sesión para continuar.'?'':e.message)}}init();

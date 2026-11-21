@@ -22,7 +22,7 @@ Las cuentas iniciales son admin@icasys.local, asesor@icasys.local y practicante@
 
 ### Recuperar una contraseña olvidada
 
-Si el envío está habilitado, en el acceso pulsa **Olvidé mi contraseña**, escribe el correo real registrado y revisa tu buzón y Spam. El enlace permite elegir una contraseña nueva, caduca en 20 minutos y solo funciona una vez. Después debes iniciar sesión de nuevo; se cierran las sesiones anteriores. Las cuentas de evaluación `@icasys.local` no reciben mensajes y deben cambiarse por correos reales desde Usuarios → Editar. La activación del envío se describe en RECUPERACION_CORREO.md.
+Si el envío está habilitado y tu cuenta está vinculada, en el acceso pulsa **Olvidé mi contraseña**, escribe el correo real registrado y revisa tu buzón y Spam. El enlace permite elegir una contraseña nueva, caduca según la configuración de Supabase y solo funciona una vez. Después debes iniciar sesión de nuevo; se cierran las sesiones anteriores. Las cuentas de evaluación `@icasys.local` no reciben mensajes y deben cambiarse por correos reales desde Usuarios → Editar. Con Supabase Auth habilitado, entra a **Mi cuenta** para vincular tu cuenta usando la contraseña actual de ICASYS. La activación se describe en SUPABASE_AUTH.md.
 
 Si el envío todavía no está configurado o necesitas ayuda, puedes utilizar la recuperación asistida:
 

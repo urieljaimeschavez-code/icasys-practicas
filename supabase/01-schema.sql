@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
  id TEXT PRIMARY KEY, name TEXT NOT NULL,
  email TEXT NOT NULL UNIQUE CHECK(email=lower(email)),
  role TEXT NOT NULL CHECK(role IN ('student','advisor','admin')),
- password_hash TEXT NOT NULL,
+ password_hash TEXT NOT NULL, auth_user_id TEXT UNIQUE,
  active INTEGER NOT NULL DEFAULT 1 CHECK(active IN(0,1)),
  must_change INTEGER NOT NULL DEFAULT 1 CHECK(must_change IN(0,1)),
  created_at TEXT NOT NULL DEFAULT to_char(CURRENT_TIMESTAMP AT TIME ZONE 'UTC','YYYY-MM-DD HH24:MI:SS.US')

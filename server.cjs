@@ -1,11 +1,12 @@
 const http = require("node:http"),
   fs = require("node:fs"),
   path = require("node:path");
-const { createHash } = require("node:crypto");
+const { createHash, randomBytes } = require("node:crypto");
 const { hashPassword, id } = require("./lib/database.cjs");
 const { openBackend } = require("./lib/backend.cjs");
 const { SupabaseStorage } = require("./lib/storage.cjs");
 const { createRecovery } = require("./lib/recovery.cjs");
+const { createSupabaseAuth } = require("./lib/supabase-auth.cjs");
 const transaction = (db, work) => db.transaction(work);
 const auth = require("./lib/auth.cjs"),
   v = require("./lib/validation.cjs");
@@ -17,6 +18,7 @@ async function createApplication({
   pool,
   storage: providedStorage,
   recoveryOptions,
+  identity: providedIdentity,
 } = {}) {
   const db = await openBackend({
     directory,
@@ -34,6 +36,14 @@ async function createApplication({
     await db.close();
     throw error;
   }
+  const identity = providedIdentity === undefined ? createSupabaseAuth() : providedIdentity;
+  async function validPassword(user, password) {
+    if (user?.auth_user_id) {
+      if (!identity) v.fail("Supabase Auth no está habilitado. Solicita apoyo técnico.",503);
+      return identity.verifyPassword(user,password);
+    }
+    return auth.verifyPassword(password,user?.password_hash || hashPassword("invalid-placeholder-password"));
+  }
   const audit = async (user, action, entity = null) =>
     await db
       .prepare("INSERT INTO audit_log(user_id,action,entity_id) VALUES(?,?,?)")
@@ -45,6 +55,7 @@ async function createApplication({
     role: u.role,
     active: u.active,
     must_change: !!u.must_change,
+    auth_linked: !!u.auth_user_id,
   });
   async function getPlacement(key) {
     if (typeof key !== "string" || !key)
@@ -205,7 +216,7 @@ async function createApplication({
       )
       .run(key, e.name, e.mime, e.content, e.size, e.sha);
   }
-  const recovery = createRecovery(db, recoveryOptions);
+  const recovery = createRecovery(db, { ...recoveryOptions, identity });
   const server = http.createServer(async (req, res) => {
     const json = (status, value) => {
       res.writeHead(status, {
@@ -262,7 +273,9 @@ async function createApplication({
           v.fail("Origen de solicitud no permitido.", 403);
       }
       if (route === "/api/recovery/config" && method === "GET")
-        return json(200, { enabled: recovery.ready });
+        return json(200, { enabled: recovery.ready, provider: recovery.provider });
+      if (route === "/api/auth/config" && method === "GET")
+        return json(200, { enabled: !!identity });
       if (route === "/api/recovery/request" && method === "POST") {
         const b = await body(req);
         return json(202, recovery.request(b.email, req.socket.remoteAddress));
@@ -290,13 +303,10 @@ async function createApplication({
         const u = await db
             .prepare("SELECT * FROM users WHERE email=?")
             .get(email),
-          valid = await auth.verifyPassword(
-            password,
-            u?.password_hash || hashPassword("invalid-placeholder-password"),
-          );
+          valid = await validPassword(u,password);
         const latest = u
           ? await db
-              .prepare("SELECT password_hash,active FROM users WHERE id=?")
+              .prepare("SELECT password_hash,active,auth_user_id FROM users WHERE id=?")
               .get(u.id)
           : null;
         if (
@@ -304,7 +314,8 @@ async function createApplication({
           !u.active ||
           !valid ||
           !latest?.active ||
-          latest.password_hash !== u.password_hash
+          latest.password_hash !== u.password_hash ||
+          latest.auth_user_id !== u.auth_user_id
         ) {
           for (const key of keys)
             await db
@@ -349,23 +360,24 @@ async function createApplication({
         const b = await body(req),
           password = v.password(b.password),
           stored = await db
-            .prepare("SELECT password_hash FROM users WHERE id=?")
+            .prepare("SELECT * FROM users WHERE id=?")
             .get(user.id);
         if (
-          !(await auth.verifyPassword(
-            String(b.current || "").slice(0, 128),
-            stored.password_hash,
-          ))
+          !(await validPassword(stored, String(b.current || "").slice(0,128)))
         )
           v.fail("La contraseña actual no es correcta.");
-        if (await auth.verifyPassword(password, stored.password_hash))
+        if (password === b.current)
           v.fail("Elige una contraseña distinta de la actual.");
         await transaction(db, async () => {
+          await db.lockUser(user.id);
+          const latest = await db.prepare("SELECT password_hash FROM users WHERE id=?").get(user.id);
+          if (latest.password_hash !== stored.password_hash) v.fail("La cuenta cambió. Vuelve a iniciar sesión.",409);
+          if (stored.auth_user_id) await identity.updateUser(stored.auth_user_id,{password});
           await db
             .prepare(
               "UPDATE users SET password_hash=?,must_change=0 WHERE id=?",
             )
-            .run(hashPassword(password), user.id);
+            .run(hashPassword(stored.auth_user_id ? randomBytes(32).toString("hex") : password), user.id);
           await db.prepare("DELETE FROM sessions WHERE user_id=?").run(user.id);
           await db.prepare("DELETE FROM password_resets WHERE user_id=?").run(user.id);
           await audit(user, "password_changed");
@@ -377,6 +389,36 @@ async function createApplication({
       }
       if (user.must_change)
         v.fail("Cambia tu contraseña temporal para continuar.", 403);
+      if (route === "/api/auth/link" && method === "POST") {
+        if (!identity) v.fail("Supabase Auth todavía no está habilitado.",503);
+        const b = await body(req), current = v.password(b.current);
+        let created;
+        try {
+          await transaction(db, async () => {
+            await db.lockUser(user.id);
+            const target = await db.prepare("SELECT * FROM users WHERE id=? AND active=1").get(user.id);
+            if (!target || target.auth_user_id) v.fail("Esta cuenta ya está vinculada o no está disponible.",409);
+            if (/\.local$/i.test(target.email)) v.fail("Primero asigna un correo real a tu cuenta desde Usuarios.");
+            if (!await auth.verifyPassword(current,target.password_hash)) v.fail("La contraseña actual no es correcta.");
+            created = await identity.createUser(target.email,current);
+            await db.prepare("UPDATE users SET auth_user_id=?,password_hash=? WHERE id=?").run(created,hashPassword(randomBytes(32).toString("hex")),user.id);
+            await db.prepare("DELETE FROM sessions WHERE user_id=?").run(user.id);
+            await db.prepare("DELETE FROM password_resets WHERE user_id=?").run(user.id);
+            await audit(user,"supabase_auth_linked",user.id);
+          });
+        } catch(error) {
+          if (created) {
+            try {
+              const linked = await db.prepare("SELECT id FROM users WHERE auth_user_id=?").get(created);
+              if (!linked) await identity.deleteUser(created);
+            } catch { console.error("Una vinculación Auth requiere revisión técnica; no se muestran credenciales."); }
+          }
+          throw error;
+        }
+        const linked = await db.prepare("SELECT * FROM users WHERE id=?").get(user.id);
+        const csrf = await auth.createSession(db,linked,res,secure);
+        return json(200,{user:publicUser(linked),csrf});
+      }
       if (route === "/api/state" && method === "GET")
         return json(200, await state(user));
       if (route === "/api/users" && method === "POST") {
@@ -422,6 +464,17 @@ async function createApplication({
           v.fail("El correo ya está registrado.", 409);
         const password = b.password ? v.password(b.password) : null;
         await transaction(db, async () => {
+          await db.lockUser(key);
+          const fresh = await db.prepare("SELECT auth_user_id,password_hash,email FROM users WHERE id=?").get(key);
+          if (!fresh || fresh.auth_user_id !== target.auth_user_id || fresh.password_hash !== target.password_hash || fresh.email !== target.email)
+            v.fail("La cuenta cambió. Actualiza los datos antes de guardarla.",409);
+          if (target.auth_user_id) {
+            if (!identity) v.fail("Supabase Auth no está habilitado.",503);
+            const update = {};
+            if (password) update.password = password;
+            if (email !== target.email) { update.email=email; update.email_confirm=true; }
+            if (Object.keys(update).length) await identity.updateUser(target.auth_user_id,update);
+          }
           await db
             .prepare("UPDATE users SET name=?,email=?,active=? WHERE id=?")
             .run(name, email, b.active ? 1 : 0, key);
@@ -430,8 +483,8 @@ async function createApplication({
               .prepare(
                 "UPDATE users SET password_hash=?,must_change=1 WHERE id=?",
               )
-              .run(hashPassword(password), key);
-          if (password || !b.active)
+              .run(hashPassword(target.auth_user_id ? randomBytes(32).toString("hex") : password), key);
+          if (password || !b.active || email !== target.email)
             await db.prepare("DELETE FROM sessions WHERE user_id=?").run(key);
           if (password || !b.active || email !== target.email)
             await db.prepare("DELETE FROM password_resets WHERE user_id=?").run(key);

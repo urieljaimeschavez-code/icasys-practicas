@@ -1,5 +1,7 @@
 # Recuperación de acceso por correo real
 
+**Alternativa anterior, no seleccionada:** el residente decidió continuar con Supabase Auth. Seguir SUPABASE_AUTH.md y mantener MAIL_RECOVERY_ENABLED=0. Esta guía de Brevo se conserva como referencia y no debe combinarse con la activación de Auth.
+
 Preparada el 21 de noviembre de 2026. La migración de la tabla privada se aplicó en Supabase. El envío real permanece pendiente de configurar Brevo, verificar el remitente y asignar direcciones reales a los usuarios. Las pruebas automatizadas utilizan un remitente simulado: no prueban entrega en Gmail.
 
 ## Configuración del envío
