@@ -178,8 +178,13 @@ test("Contrato SQL de la aplicación sobre emulación PostgreSQL y Storage priva
         return objects.get(key);
       },
     };
+  const recoveryMessages = [];
   const { createApplication } = require("../server.cjs"),
-    app = await createApplication({ driver: "postgres", pool, storage });
+    app = await createApplication({ driver: "postgres", pool, storage,
+      recoveryOptions: { enabled: true, baseURL: "https://portal.example.test", mailer: {
+        async sendRecovery(email, link) { recoveryMessages.push({email,link}); },
+      } },
+    });
   await new Promise((resolve) => app.server.listen(0, "127.0.0.1", resolve));
   const base = `http://127.0.0.1:${app.server.address().port}`,
     sessions = {};
@@ -258,6 +263,21 @@ test("Contrato SQL de la aplicación sobre emulación PostgreSQL y Storage priva
       undefined,
     );
     assert.equal(objects.size, 1);
+    const publicConfig=await req("recovery/config");
+    assert.equal(publicConfig.b.enabled,true);
+    const known=await req("recovery/request",null,{email:"student@example.test"});
+    const absent=await req("recovery/request",null,{email:"missing@example.test"});
+    assert.equal(known.r.status,202);assert.deepEqual(known.b,absent.b);
+    for(let i=0;i<40&&!recoveryMessages.length;i++)await new Promise(resolve=>setTimeout(resolve,25));
+    assert.equal(recoveryMessages.length,1);
+    const token=recoveryMessages[0].link.split("/#recuperar/")[1];
+    const wrongOrigin=await fetch(base+"/api/recovery/complete",{method:"POST",headers:{Origin:"https://otro.example.test","Content-Type":"application/json"},body:JSON.stringify({token,password:"CorreoRecuperado2026!"})});
+    assert.equal(wrongOrigin.status,403);
+    const recovered=await req("recovery/complete",null,{token,password:"CorreoRecuperado2026!"});
+    assert.equal(recovered.r.status,200,JSON.stringify(recovered.b));
+    assert.equal((await req("state","student")).r.status,401);
+    assert.equal((await req("recovery/complete",null,{token,password:"CorreoRecuperado2026!"})).r.status,400);
+    assert.equal((await req("login",null,{email:"student@example.test",password:"CorreoRecuperado2026!"})).r.status,200);
   } finally {
     await app.close();
   }

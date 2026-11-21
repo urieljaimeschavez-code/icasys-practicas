@@ -22,7 +22,9 @@ Las cuentas iniciales son admin@icasys.local, asesor@icasys.local y practicante@
 
 ### Recuperar una contraseña olvidada
 
-En el acceso, **Olvidé mi contraseña** muestra el procedimiento de recuperación asistida. No se envían enlaces por correo: las cuentas de evaluación `@icasys.local` no son buzones reales.
+Si el envío está habilitado, en el acceso pulsa **Olvidé mi contraseña**, escribe el correo real registrado y revisa tu buzón y Spam. El enlace permite elegir una contraseña nueva, caduca en 20 minutos y solo funciona una vez. Después debes iniciar sesión de nuevo; se cierran las sesiones anteriores. Las cuentas de evaluación `@icasys.local` no reciben mensajes y deben cambiarse por correos reales desde Usuarios → Editar. La activación del envío se describe en RECUPERACION_CORREO.md.
+
+Si el envío todavía no está configurado o necesitas ayuda, puedes utilizar la recuperación asistida:
 
 1. El titular solicita ayuda al administrador, quien verifica su identidad.
 2. El administrador entra a **Usuarios → Restablecer contraseña** junto a la cuenta correspondiente.

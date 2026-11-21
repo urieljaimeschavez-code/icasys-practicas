@@ -1,6 +1,6 @@
 <!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Documentación de prácticas profesionales ICASYS</title><style>
  *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:#14233b;background:#f4f7fc;font:15px/1.75 Arial,sans-serif}aside{width:255px;position:fixed;inset:0 auto 0 0;background:#073570;color:white;padding:35px 24px;overflow:auto}aside strong{font-size:25px}aside p{font-size:13px;color:#c0d5f1}aside a{display:block;padding:11px 0;border-bottom:1px solid #ffffff20;color:#e4eeff;text-decoration:none;font-size:13px}main{margin-left:255px;max-width:1250px;padding:45px 50px}.intro{background:white;border:1px solid #e0e8f5;border-radius:16px;padding:35px;margin-bottom:32px}.intro h1{font-size:32px;line-height:1.25;color:#073570;margin:0 0 20px}article{background:white;padding:40px;border:1px solid #e0e8f5;border-radius:16px;margin-bottom:35px;scroll-margin-top:25px}h1{font-size:28px;line-height:1.35;margin-top:0}h2{font-size:21px;margin-top:35px;color:#073570}h3{font-size:17px;margin-top:28px}p,li{overflow-wrap:anywhere}table{width:100%;border-collapse:collapse;font-size:12px;line-height:1.6;margin:20px 0}th{text-align:left;background:#eef4fc;color:#073570}th,td{border:1px solid #e0e6f0;padding:10px;vertical-align:top}pre{white-space:pre-wrap;overflow-wrap:anywhere;padding:20px;background:#f2f5fa;border-radius:8px;font-size:12px;line-height:1.6}code{font-family:Consolas,monospace}a{color:#0055b8}.section-label{font-size:11px;text-transform:uppercase;color:#647a99;letter-spacing:1.2px;margin-bottom:14px}.intro small{color:#60738f}.note{padding:15px 20px;background:#eff5ff;border-radius:8px}img{max-width:100%}@media(max-width:850px){aside{position:static;width:100%;padding:20px}aside a{display:inline-block;margin-right:15px}main{margin:0;padding:20px}article{padding:24px}}@media print{body{background:white;font-size:10pt}aside{display:none}main{margin:0;padding:0;max-width:none}.intro,article{padding:0;border:0;border-radius:0;box-shadow:none}.intro{margin-bottom:1cm}article{break-before:page}h1,h2,h3{break-after:avoid}tr{break-inside:avoid}pre{font-size:8pt}th,td{padding:6px}a{color:inherit;text-decoration:none}@page{size:A4;margin:1.8cm}}
- </style></head><body><aside><strong>ICASYS</strong><p>Documentación del sistema<br>Versión 3.0 · Noviembre de 2026</p><a href="#estado">Estado actual</a><a href="#nube">Conectar Supabase</a><a href="#usuario">Manual de usuario</a><a href="#instalacion">Instalación y operación</a><a href="#tecnico">Manual técnico</a><a href="#datos">Modelo de datos</a><a href="#pruebas">Requerimientos y pruebas</a><a href="#residencia">Documento base de residencia</a><p>Los documentos fuente editables se encuentran en la carpeta docs.</p></aside><main><section class="intro"><div class="section-label">Proyecto de residencia profesional</div><h1>Documentación del sistema de prácticas profesionales</h1><p>Guías para utilizar, instalar, mantener y evaluar la aplicación con cuentas individuales y base de datos. Incluye el expediente técnico y una base editable para el informe académico.</p><p class="note">Para guardar o imprimir este expediente, usa Ctrl + P y selecciona Guardar como PDF. La versión académica final requiere completar los datos de la institución, el periodo y los asesores.</p><small>Conexión Supabase verificada · 1 de noviembre de 2026</small></section><article id="estado"><div class="section-label">ICASYS · Estado actual</div><h1>Estado de la instalación ICASYS</h1>
+ </style></head><body><aside><strong>ICASYS</strong><p>Documentación del sistema<br>Versión 3.0 · Noviembre de 2026</p><a href="#estado">Estado actual</a><a href="#nube">Conectar Supabase</a><a href="#correo">Recuperación por correo</a><a href="#usuario">Manual de usuario</a><a href="#instalacion">Instalación y operación</a><a href="#tecnico">Manual técnico</a><a href="#datos">Modelo de datos</a><a href="#pruebas">Requerimientos y pruebas</a><a href="#residencia">Documento base de residencia</a><p>Los documentos fuente editables se encuentran en la carpeta docs.</p></aside><main><section class="intro"><div class="section-label">Proyecto de residencia profesional</div><h1>Documentación del sistema de prácticas profesionales</h1><p>Guías para utilizar, instalar, mantener y evaluar la aplicación con cuentas individuales y base de datos. Incluye el expediente técnico y una base editable para el informe académico.</p><p class="note">Para guardar o imprimir este expediente, usa Ctrl + P y selecciona Guardar como PDF. La versión académica final requiere completar los datos de la institución, el periodo y los asesores.</p><small>Conexión Supabase verificada · 1 de noviembre de 2026</small></section><article id="estado"><div class="section-label">ICASYS · Estado actual</div><h1>Estado de la instalación ICASYS</h1>
 <p>Actualizado el 1 de noviembre de 2026, hora de Ciudad de México.</p>
 <h2>Instalación conectada</h2>
 <ul>
@@ -141,6 +141,62 @@ COOKIE_SECURE=0
 <li><a href="https://node-postgres.com/features/transactions">https://node-postgres.com/features/transactions</a></li>
 <li><a href="https://node-postgres.com/features/ssl">https://node-postgres.com/features/ssl</a></li>
 </ul>
+</article><article id="correo"><div class="section-label">ICASYS · Recuperación por correo</div><h1>Recuperación de acceso por correo real</h1>
+<p>Preparada el 21 de noviembre de 2026. La migración de la tabla privada se aplicó en Supabase. El envío real permanece pendiente de configurar Brevo, verificar el remitente y asignar direcciones reales a los usuarios. Las pruebas automatizadas utilizan un remitente simulado: no prueban entrega en Gmail.</p>
+<h2>Configuración del envío</h2>
+<ol>
+<li>Crear una cuenta en <a href="https://www.brevo.com/">https://www.brevo.com/</a> y completar la verificación y activación que solicite el proveedor.</li>
+<li>En Settings → Senders, Domains, IPs → Senders, añadir el correo remitente y verificarlo con el código recibido en Gmail. No introducir la contraseña de Gmail en el proyecto.</li>
+<li>Crear una clave API en Brevo. Guardarla directamente como variable secreta en Render; nunca en GitHub, capturas ni chat.</li>
+<li>Añadir en Render → Environment:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>BREVO_API_KEY</td>
+<td>Clave API privada de Brevo</td>
+</tr>
+<tr>
+<td>MAIL_FROM_EMAIL</td>
+<td>Dirección exacta del remitente verificado</td>
+</tr>
+<tr>
+<td>MAIL_RECOVERY_ENABLED</td>
+<td>1, una vez completada la configuración</td>
+</tr>
+</tbody></table>
+<p>La aplicación utiliza APP_ORIGIN HTTPS o la URL externa de Render para generar los enlaces. No agregar el APP_ORIGIN de localhost al servicio publicado. Antes de habilitar en otra instalación PostgreSQL, ejecutar supabase/03-password-recovery.sql. Para SQLite, la tabla se crea al iniciar.</p>
+<p>Brevo puede sustituir el dominio del remitente Gmail por un dominio brevosend.com porque no se puede autenticar un dominio público como gmail.com. Esto no cambia la dirección Gmail del destinatario. Para uso institucional se recomienda un dominio de envío propio autenticado; no configurar icasys.mx sin autorización y acceso a sus DNS.</p>
+<h2>Registrar correos reales</h2>
+<p>El administrador entra a Usuarios → Editar, cambia el correo de cada cuenta por una dirección real del titular y guarda. Se conserva el identificador del usuario y con él sus actividades, estancias y horas. Desde ese momento se inicia sesión con el nuevo correo.</p>
+<p>Cada cuenta necesita un correo distinto. Para una demostración personal se pueden usar alias del mismo Gmail, por ejemplo <a href="mailto:nombre+asesor@gmail.com">nombre+asesor@gmail.com</a> y <a href="mailto:nombre+practicante@gmail.com">nombre+practicante@gmail.com</a>, siempre bajo control del residente; todos llegarán al mismo buzón. Para usuarios reales debe utilizarse el correo de cada titular. Verificar cuidadosamente la dirección antes de asignarla; la recuperación prueba acceso al buzón al utilizar el enlace, no cuando el administrador escribe la dirección.</p>
+<h2>Probar la entrega real</h2>
+<ol>
+<li>Mantener disponible el acceso del administrador como alternativa.</li>
+<li>Cerrar sesión y pulsar Olvidé mi contraseña.</li>
+<li>Introducir un correo real que ya esté registrado en una cuenta activa.</li>
+<li>Revisar Gmail y Spam. Abrir el enlace y elegir una contraseña nueva.</li>
+<li>Confirmar que la contraseña anterior y el enlace utilizado ya no funcionan, que la nueva sí funciona y que las actividades siguen disponibles.</li>
+<li>Revisar el evento password_recovered_email en Historial del sistema.</li>
+</ol>
+<p>No se envía la contraseña existente ni se ingresa automáticamente después del restablecimiento. El mensaje de solicitud es el mismo para correos existentes y desconocidos; no confirma que un correo esté registrado. No considerar completada la integración hasta probar un envío y una recuperación reales.</p>
+<h2>Funcionamiento y límites</h2>
+<ul>
+<li>Tokens aleatorios de 256 bits, almacenados solo como hash SHA-256 en una tabla privada con RLS y sin acceso de roles del navegador.</li>
+<li>Caducidad de 20 minutos; consumo atómico, de un solo uso. Al recuperar se invalidan todos los otros enlaces y sesiones de esa cuenta.</li>
+<li>Cambiar correo, restablecer manualmente, cambiar contraseña o desactivar la cuenta invalida los enlaces anteriores.</li>
+<li>Enlace HTTPS construido con configuración confiable, no con el encabezado Host. El token viaja en el fragmento del navegador y se retira de la barra al abrir el formulario. Política Referrer-Policy no-referrer.</li>
+<li>Límite persistente de tres solicitudes por correo y veinte por dirección de conexión cada hora; treinta intentos de completar por dirección por hora. Detrás del proxy de Render, las conexiones pueden compartir el límite por dirección. La recuperación administrativa sigue disponible.</li>
+<li>Envíos en segundo plano para que su duración no revele si existe una cuenta. La cola en memoria está limitada a 64 tareas; un reinicio abrupto puede interrumpir un correo. Solicitar otro enlace más tarde si no llega. No hay reintentos automáticos ni garantía de entrega.</li>
+<li>Logs sin tokens, correos ni respuestas privadas del proveedor. La entrega y las restricciones de la cuenta se revisan en Brevo.</li>
+<li>Las contraseñas conservan el algoritmo scrypt del sistema; no se trasladaron las cuentas a Supabase Auth.</li>
+</ul>
+<p>Referencias: <a href="https://developers.brevo.com/docs/send-a-transactional-email">https://developers.brevo.com/docs/send-a-transactional-email</a>, <a href="https://help.brevo.com/hc/en-us/articles/208836149-Create-a-new-sender-From-name-and-From-email">https://help.brevo.com/hc/en-us/articles/208836149-Create-a-new-sender-From-name-and-From-email</a>, <a href="https://help.brevo.com/hc/en-us/articles/16045394674066-Troubleshooting-Domain-authentication">https://help.brevo.com/hc/en-us/articles/16045394674066-Troubleshooting-Domain-authentication</a> y <a href="https://cheatsheetseries.owasp.org/cheatsheets/Forgot_Password_Cheat_Sheet.html">https://cheatsheetseries.owasp.org/cheatsheets/Forgot_Password_Cheat_Sheet.html</a>.</p>
 </article><article id="usuario"><div class="section-label">ICASYS · Manual de usuario</div><h1>Manual de usuario</h1>
 <p><strong>Sistema de seguimiento de prácticas profesionales · ICASYS</strong><br>Versión 2.0 · 18 de octubre de 2026 · Entorno local de evaluación</p>
 <h2>1. Para qué sirve</h2>
@@ -157,7 +213,8 @@ COOKIE_SECURE=0
 <p>Las cuentas iniciales son <a href="mailto:admin@icasys.local">admin@icasys.local</a>, <a href="mailto:asesor@icasys.local">asesor@icasys.local</a> y <a href="mailto:practicante@icasys.local">practicante@icasys.local</a>. Sus contraseñas se generan individualmente en data/accesos-iniciales.txt al primer inicio. No son cuentas de correo reales ni cuentas del sitio de ICASYS.</p>
 <h2>3. Elementos comunes</h2>
 <h3>Recuperar una contraseña olvidada</h3>
-<p>En el acceso, <strong>Olvidé mi contraseña</strong> muestra el procedimiento de recuperación asistida. No se envían enlaces por correo: las cuentas de evaluación <code>@icasys.local</code> no son buzones reales.</p>
+<p>Si el envío está habilitado, en el acceso pulsa <strong>Olvidé mi contraseña</strong>, escribe el correo real registrado y revisa tu buzón y Spam. El enlace permite elegir una contraseña nueva, caduca en 20 minutos y solo funciona una vez. Después debes iniciar sesión de nuevo; se cierran las sesiones anteriores. Las cuentas de evaluación <code>@icasys.local</code> no reciben mensajes y deben cambiarse por correos reales desde Usuarios → Editar. La activación del envío se describe en RECUPERACION_CORREO.md.</p>
+<p>Si el envío todavía no está configurado o necesitas ayuda, puedes utilizar la recuperación asistida:</p>
 <ol>
 <li>El titular solicita ayuda al administrador, quien verifica su identidad.</li>
 <li>El administrador entra a <strong>Usuarios → Restablecer contraseña</strong> junto a la cuenta correspondiente.</li>

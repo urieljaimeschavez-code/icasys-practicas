@@ -42,4 +42,9 @@ CREATE TABLE IF NOT EXISTS audit_log (
  id INTEGER PRIMARY KEY, user_id TEXT REFERENCES users(id), action TEXT NOT NULL,
  entity_id TEXT, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-PRAGMA user_version = 1;
+CREATE TABLE IF NOT EXISTS password_resets (
+ token_hash TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES users(id),
+ email TEXT NOT NULL, password_digest TEXT NOT NULL, expires_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS password_resets_user ON password_resets(user_id);
+PRAGMA user_version = 2;

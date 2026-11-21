@@ -57,6 +57,12 @@ CREATE TABLE IF NOT EXISTS storage_uploads (
  storage_key TEXT PRIMARY KEY,created_at TEXT NOT NULL DEFAULT to_char(CURRENT_TIMESTAMP AT TIME ZONE 'UTC','YYYY-MM-DD HH24:MI:SS.US')
 );
 REVOKE ALL ON ALL TABLES IN SCHEMA icasys FROM PUBLIC,anon,authenticated;
+CREATE TABLE IF NOT EXISTS password_resets (
+ token_hash TEXT PRIMARY KEY,user_id TEXT NOT NULL REFERENCES users(id),email TEXT NOT NULL,password_digest TEXT NOT NULL,expires_at BIGINT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS password_resets_user ON password_resets(user_id);
+REVOKE ALL ON TABLE password_resets FROM PUBLIC,anon,authenticated;
+ALTER TABLE password_resets ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON ALL SEQUENCES IN SCHEMA icasys FROM PUBLIC,anon,authenticated;
 ALTER DEFAULT PRIVILEGES IN SCHEMA icasys REVOKE ALL ON TABLES FROM PUBLIC,anon,authenticated;
 -- No policies allow browser roles to read these tables. The Node server uses

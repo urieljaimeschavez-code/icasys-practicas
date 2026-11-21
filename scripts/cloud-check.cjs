@@ -12,6 +12,7 @@ const { connect, reportError } = require("./cloud-common.cjs");
       "login_attempts",
       "audit_log",
       "storage_uploads",
+      "password_resets",
     ])
       await db.prepare(`SELECT 1 FROM ${table} LIMIT 1`).all();
     const role = await db.prepare("SELECT current_user AS name").get();

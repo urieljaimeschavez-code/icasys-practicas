@@ -5,6 +5,7 @@ const { createHash } = require("node:crypto");
 const { hashPassword, id } = require("./lib/database.cjs");
 const { openBackend } = require("./lib/backend.cjs");
 const { SupabaseStorage } = require("./lib/storage.cjs");
+const { createRecovery } = require("./lib/recovery.cjs");
 const transaction = (db, work) => db.transaction(work);
 const auth = require("./lib/auth.cjs"),
   v = require("./lib/validation.cjs");
@@ -15,6 +16,7 @@ async function createApplication({
   driver = process.env.DB_DRIVER || "sqlite",
   pool,
   storage: providedStorage,
+  recoveryOptions,
 } = {}) {
   const db = await openBackend({
     directory,
@@ -203,6 +205,7 @@ async function createApplication({
       )
       .run(key, e.name, e.mime, e.content, e.size, e.sha);
   }
+  const recovery = createRecovery(db, recoveryOptions);
   const server = http.createServer(async (req, res) => {
     const json = (status, value) => {
       res.writeHead(status, {
@@ -211,7 +214,7 @@ async function createApplication({
       res.end(JSON.stringify(value));
     };
     res.setHeader("X-Content-Type-Options", "nosniff");
-    res.setHeader("Referrer-Policy", "same-origin");
+    res.setHeader("Referrer-Policy", "no-referrer");
     res.setHeader("X-Frame-Options", "DENY");
     res.setHeader("Cache-Control", "no-store");
     res.setHeader(
@@ -257,6 +260,16 @@ async function createApplication({
             : new URL(origin).host !== req.headers.host)
         )
           v.fail("Origen de solicitud no permitido.", 403);
+      }
+      if (route === "/api/recovery/config" && method === "GET")
+        return json(200, { enabled: recovery.ready });
+      if (route === "/api/recovery/request" && method === "POST") {
+        const b = await body(req);
+        return json(202, recovery.request(b.email, req.socket.remoteAddress));
+      }
+      if (route === "/api/recovery/complete" && method === "POST") {
+        const b = await body(req);
+        return json(200, await recovery.complete(b.token, b.password, req.socket.remoteAddress));
       }
       if (route === "/api/login" && method === "POST") {
         const b = await body(req),
@@ -354,6 +367,7 @@ async function createApplication({
             )
             .run(hashPassword(password), user.id);
           await db.prepare("DELETE FROM sessions WHERE user_id=?").run(user.id);
+          await db.prepare("DELETE FROM password_resets WHERE user_id=?").run(user.id);
           await audit(user, "password_changed");
         });
         const csrf = await auth.createSession(db, user, res, secure);
@@ -419,6 +433,8 @@ async function createApplication({
               .run(hashPassword(password), key);
           if (password || !b.active)
             await db.prepare("DELETE FROM sessions WHERE user_id=?").run(key);
+          if (password || !b.active || email !== target.email)
+            await db.prepare("DELETE FROM password_resets WHERE user_id=?").run(key);
           if (password)
             await db.prepare("DELETE FROM login_attempts WHERE key=?")
               .run(auth.digest(`account:${target.email}`));
@@ -768,6 +784,7 @@ async function createApplication({
     close: () =>
       new Promise((resolve) =>
         server.close(async () => {
+          await recovery.drain();
           await db.close();
           resolve();
         }),
