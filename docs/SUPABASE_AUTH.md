@@ -10,17 +10,7 @@ Preparación del 21 de noviembre de 2026. Este es el método elegido por el resi
    `https://icasys-practicas.onrender.com`
 
    Añadir `https://icasys-practicas.onrender.com/` a las Redirect URLs permitidas.
-3. En Authentication → Emails → Templates → Reset password, utilizar esta plantilla y guardar:
-
-```html
-<h2>Recuperar contraseña de ICASYS</h2>
-<p>Se solicitó cambiar la contraseña de tu cuenta del portal de prácticas profesionales.</p>
-<p><a href="{{ .SiteURL }}/#supabase-recuperar/{{ .TokenHash }}">Elegir una contraseña nueva</a></p>
-<p>El enlace es de un solo uso y caduca. Si no lo solicitaste, ignora este mensaje.</p>
-<p>Proyecto de residencia · Sistema independiente de evaluación.</p>
-```
-
-   El enlace predeterminado con `ConfirmationURL` no es compatible con este flujo del portal. No se debe enviarlo hasta guardar la plantilla anterior. Se usa TokenHash para que el servidor verifique y consuma el código de recuperación y nunca entregue una sesión Supabase al navegador.
+3. Conservar la plantilla predeterminada de Reset password. El panel solo permite editarla con SMTP personalizado; no hace falta activar SMTP para usar el envío de prueba del propio Supabase. El portal solicita la recuperación con PKCE s256 y procesa el retorno `/?code=...` de la plantilla estándar.
 4. En Render → Environment, agregar **SUPABASE_AUTH_ENABLED=1** y mantener **MAIL_RECOVERY_ENABLED=0**. No se necesita una clave nueva de Brevo ni publicar claves de Supabase; el servidor utiliza la configuración privada existente.
 5. Guardar y desplegar. Confirmar Live antes de continuar.
 
@@ -38,7 +28,7 @@ Las cuentas aún no vinculadas conservan el acceso local mientras se realiza la 
 
 ## Recuperar por correo
 
-Con la cuenta ya vinculada, cerrar sesión, pulsar Olvidé mi contraseña y solicitar el enlace al correo registrado. Al abrirlo, el portal retira el token de la barra del navegador y muestra el formulario. Al guardar, Supabase verifica y consume el token, cambia la contraseña y el servidor invalida las sesiones de ICASYS. El usuario debe iniciar sesión de nuevo.
+Con la cuenta ya vinculada, cerrar sesión, pulsar Olvidé mi contraseña y solicitar el enlace al correo registrado. Abrir el enlace en el mismo navegador y perfil donde se pidió; la recuperación usa una cookie HttpOnly, SameSite=Lax y Secure en producción que conserva el verificador PKCE durante veinte minutos. La URL solo lleva el código de autorización, que por sí solo no permite cambiar la contraseña. Al abrirlo, el portal retira el código de la barra y muestra el formulario. Al guardar, el servidor canjea código y verificador, Supabase consume el código y actualiza la contraseña; ICASYS invalida sus sesiones. El usuario debe iniciar sesión de nuevo. Si se pidieron varios enlaces, utilizar el último: cada solicitud reemplaza el verificador anterior. Si se perdió la cookie o se abrió en otro navegador, solicitar otro enlace desde ese navegador.
 
 La caducidad la controla la configuración de tokens de correo de Supabase; no se debe asumir el plazo de 20 minutos de la alternativa Brevo. La contraseña debe tener al menos 12 caracteres e incluir mayúscula, minúscula y número. Si el enlace se consume pero después ocurre un error de red o de base de datos, puede ser necesario pedir otro y comprobar si ya cambió la contraseña.
 
@@ -59,6 +49,6 @@ El envío predeterminado de Supabase tiene límites reducidos y únicamente perm
 
 ## Verificación pendiente en la instalación real
 
-Configurar URL y plantilla; habilitar en Render; vincular la cuenta administradora personalmente; comprobar Auth → Users, inicio de sesión, llegada al Gmail, recuperación, rechazo del enlace usado, conservación de los datos y registro password_recovered_supabase. Después repetir con los otros perfiles, resolviendo primero la configuración de envío para sus destinatarios.
+Configurar URL y conservar la plantilla predeterminada; habilitar en Render; vincular la cuenta administradora personalmente; comprobar Auth → Users, inicio de sesión, llegada al Gmail, recuperación, rechazo del enlace usado, conservación de los datos y registro password_recovered_supabase. Después repetir con los otros perfiles, resolviendo primero la configuración de envío para sus destinatarios.
 
 Referencias: https://supabase.com/docs/guides/auth/auth-email-templates, https://supabase.com/docs/reference/javascript/auth-verifyotp y https://supabase.com/docs/guides/auth/auth-smtp.

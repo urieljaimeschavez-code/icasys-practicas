@@ -4,13 +4,14 @@ const {createApplication}=require("../server.cjs"),{hashPassword}=require("../li
 const {createSupabaseAuth}=require("../lib/supabase-auth.cjs");
 const password="MiCuentaSegura2026!", changed="OtraCuentaSegura2026!";
 function fakeIdentity(){
- const users=new Map(),links=new Map(),messages=[];let count=0;
+ const users=new Map(),links=new Map(),messages=[],challenges=new Map();let count=0;
  return {ready:true,users,links,messages,
   async createUser(email,password){const id="identity-"+(++count);users.set(id,{id,email,password});return id;},
   async deleteUser(id){users.delete(id);},
   async verifyPassword(user,password){const remote=users.get(user.auth_user_id);return !!remote&&remote.email===user.email&&remote.password===password;},
   async updateUser(id,body){Object.assign(users.get(id),body);},
-  async sendRecovery(email,origin){const user=[...users.values()].find(u=>u.email===email);const token=(String(messages.length+1).padStart(64,"a"));links.set(token,user.id);messages.push({email,origin,token});},
+  async sendRecovery(email,origin,challenge){const user=[...users.values()].find(u=>u.email===email);const token=(String(messages.length+1).padStart(64,"a"));links.set(token,user.id);challenges.set(token,challenge);messages.push({email,origin,token,challenge});},
+  async exchangeRecovery(code,verifier){const {createHash}=require('node:crypto');if(challenges.get(code)!==createHash('sha256').update(verifier).digest('base64url'))throw Object.assign(Error('Navegador distinto'),{status:400});return this.verifyRecovery(code);},
   async verifyRecovery(token){const id=links.get(token);links.delete(token);if(!id)throw Object.assign(Error("Enlace no válido"),{status:400});return {user:{...users.get(id)},access_token:"private-session"};},
   async finishRecovery(session,password){users.get(session.user.id).password=password;},
   async releaseRecovery(){},
@@ -99,4 +100,28 @@ test("Cliente Supabase Auth: API privada, validación de identidad, OTP y errore
  assert.equal(calls[0].options.headers.apikey,"fake-secret");assert.ok(calls[0].options.signal);assert.equal(calls[0].options.redirect,"error");
  await assert.rejects(client.verifyRecovery("x".repeat(64)),e=>e.status===400&&!e.message.includes('PRIVATE'));
  assert.equal(createSupabaseAuth({SUPABASE_AUTH_ENABLED:"0"}),null);
+});
+test("Supabase Auth: correo predeterminado PKCE exige el mismo navegador y es de un solo uso",async t=>{
+ const f=await fixture(t);await f.login('admin');const link=await f.request('auth/link','admin',{current:password});f.remember('admin',link);
+ const requested=await f.request('recovery/request',null,{email:'admin@example.test'});
+ const cookie=requested.headers.get('set-cookie');assert.match(cookie,/HttpOnly/);assert.match(cookie,/SameSite=Lax/);
+ const verifier=cookie.match(/icasys_recovery=([a-f0-9]{64})/)[1];
+ assert.ok(!JSON.stringify(requested.body).includes(verifier));
+ for(let i=0;i<40&&!f.identity.messages.length;i++)await new Promise(resolve=>setTimeout(resolve,20));
+ const message=f.identity.messages[0],body={code:message.token,password:changed};
+ assert.equal((await f.request('recovery/complete',null,body)).status,400);
+ assert.equal((await f.request('recovery/complete',null,body,'POST',{Cookie:'icasys_recovery='+'f'.repeat(64)})).status,400);
+ assert.equal((await f.request('recovery/complete',null,{...body,password:'corta'},'POST',{Cookie:cookie.split(';')[0]})).status,422);
+ const completed=await f.request('recovery/complete',null,body,'POST',{Cookie:cookie.split(';')[0]});
+ assert.equal(completed.status,200,JSON.stringify(completed.body));assert.match(completed.headers.get('set-cookie'),/Max-Age=0/);
+ assert.equal((await f.request('state','admin')).status,401);
+ assert.equal((await f.request('recovery/complete',null,body,'POST',{Cookie:cookie.split(';')[0]})).status,400);
+ assert.equal((await f.login('admin',changed)).status,200);
+});
+test("Cliente Supabase Auth: desafío s256 y canje PKCE del código de correo",async()=>{
+ const calls=[];const client=createSupabaseAuth({SUPABASE_AUTH_ENABLED:'1',SUPABASE_URL:'https://project.example.test',SUPABASE_SERVICE_ROLE_KEY:'fake-key'},async(url,options)=>{calls.push({url,body:JSON.parse(options.body)});return {ok:true,json:async()=>({user:{id:'uid'},access_token:'private'})};});
+ await client.sendRecovery('admin@example.test','https://portal.example.test','challenge-test');
+ assert.deepEqual(calls[0].body,{email:'admin@example.test',code_challenge:'challenge-test',code_challenge_method:'s256'});
+ await client.exchangeRecovery('code-value','verifier-value');
+ assert.ok(calls[1].url.endsWith('/token?grant_type=pkce'));assert.deepEqual(calls[1].body,{auth_code:'code-value',code_verifier:'verifier-value'});
 });

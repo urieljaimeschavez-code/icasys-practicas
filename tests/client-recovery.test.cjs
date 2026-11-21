@@ -1,11 +1,11 @@
 const {test}=require("node:test"),assert=require("node:assert/strict"),vm=require("node:vm"),fs=require("node:fs"),path=require("node:path");
 const source=fs.readFileSync(path.join(__dirname,"../app.js"),"utf8");
-function boot(hash,ok=true){
+function boot(hash,ok=true,search=""){
  const elements=new Map(),requests=[],navigation=[];
  const element=selector=>{if(!elements.has(selector))elements.set(selector,{value:"",innerHTML:"",textContent:"",style:{},open:false,disabled:false,addEventListener(){},close(){this.open=false;}});return elements.get(selector);};
- const location={hash,pathname:"/",search:""};
+ const location={hash,pathname:"/",search};
  const context={document:{querySelector:element,querySelectorAll:()=>[],body:{classList:{remove(){},add(){}}}},window:{},location,
-  history:{replaceState(a,b,url){navigation.push(url);location.hash="";}},setTimeout:()=>1,clearTimeout(){},
+  history:{replaceState(a,b,url){navigation.push(url);location.hash="";location.search=url.includes('?')?url.slice(url.indexOf('?')):'';}},URLSearchParams,setTimeout:()=>1,clearTimeout(){},
   fetch:async(url,options)=>{requests.push({url,options});return {ok,status:ok?200:400,json:async()=>ok?{message:"Contraseña actualizada. Inicia sesión."}:{error:"El enlace ya se usó o ha caducado."}};},
  };
  vm.runInNewContext(source,context,{filename:"app.js"});return {element,requests,navigation,context};
@@ -34,4 +34,14 @@ test("Cliente: una plantilla antigua con access_token no ingresa automáticament
  const f=boot("#access_token=private-example&type=recovery");
  assert.equal(f.context.location.hash,"");assert.equal(f.requests.length,0);
  assert.match(f.element('#auth-content').innerHTML,/plantilla/);assert.ok(!f.element('#auth-content').innerHTML.includes('private-example'));
+});
+test("Cliente: correo predeterminado abre el formulario PKCE y retira el código de la dirección",async()=>{
+ const code="abcd1234-5678-90ab-cdef-123456789012",f=boot("",true,"?code="+code+"&origen=correo");
+ assert.match(f.element('#auth-content').innerHTML,/Elige una contraseña nueva/);
+ assert.equal(f.requests.length,0);assert.deepEqual(f.navigation,["/?origen=correo"]);
+ f.element('#recovery-password').value="NuevaSegura2026!";f.element('#recovery-confirm').value="NuevaSegura2026!";
+ f.element('#recovery-complete').onsubmit({preventDefault(){},submitter:{disabled:false}});
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.deepEqual(JSON.parse(f.requests[0].options.body),{code,password:"NuevaSegura2026!"});
+ assert.equal(f.requests[0].options.credentials,'same-origin');
 });

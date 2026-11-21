@@ -67,16 +67,16 @@ async function forgotPasswordScreen(){
   const config=await api('recovery/config');
   if(!config.enabled){$('#modal-content').innerHTML='<button class="close" aria-label="Cerrar">×</button><h3>Recuperar contraseña</h3><p>La recuperación por correo todavía no está habilitada. Solicita al administrador una contraseña temporal desde Usuarios → Restablecer contraseña.</p>';$('.close').onclick=()=>$('#modal').close();return;}
   modal('<div class="modal-title"><h3>Recuperar contraseña</h3><p class="sub">Escribe el correo real registrado en tu cuenta. El enlace caduca en 20 minutos.</p></div><form id="recovery-request"><div class="field"><label for="recovery-email">Correo electrónico</label><input id="recovery-email" type="email" autocomplete="email" maxlength="180" required></div><p class="error" id="recovery-error" role="alert"></p><button class="btn" type="submit">Enviar enlace de recuperación</button></form><p class="sub" id="recovery-result" role="status"></p>');
-  if(config.provider==='supabase')$('#modal-content .sub').textContent='Escribe el correo real de tu cuenta vinculada a Supabase. Revisa el buzón y Spam; el enlace caduca según la configuración del portal.';
+  if(config.provider==='supabase')$('#modal-content .sub').textContent='Escribe el correo real de tu cuenta vinculada. Solicita y abre el enlace en este mismo navegador. Revisa también Spam.';
   $('#recovery-email').value=$('#login-email')?.value||'';
   $('#recovery-request').onsubmit=e=>{e.preventDefault();commit(e.submitter,'#recovery-error',async()=>{const r=await api('recovery/request','POST',{email:$('#recovery-email').value});$('#recovery-result').textContent=r.message;$('#recovery-request').hidden=true;})};
  }catch(error){$('#modal').close();toast(error.message);}
 }
-function recoveryScreen(token){
- loginScreen();history.replaceState(null,'',location.pathname+location.search);
+function recoveryScreen(token,code){
+ loginScreen();const cleanParams=new URLSearchParams(location.search);cleanParams.delete('code');history.replaceState(null,'',location.pathname+(cleanParams.toString()?'?'+cleanParams.toString():''));
  $('#auth-content').innerHTML='<span class="pill">Recuperación de acceso</span><h1>Elige una contraseña nueva</h1><p class="sub">De 12 a 128 caracteres, con mayúscula, minúscula y número. Al guardar se cerrarán tus sesiones anteriores.</p><form id="recovery-complete"><div class="field"><label for="recovery-password">Nueva contraseña</label><input id="recovery-password" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></div><div class="field"><label for="recovery-confirm">Confirmar contraseña</label><input id="recovery-confirm" type="password" autocomplete="new-password" maxlength="128" required></div><p class="error" id="recovery-complete-error" role="alert"></p><button class="btn" type="submit">Guardar nueva contraseña</button></form><p><button class="link-btn" id="recovery-back" type="button">Volver al inicio de sesión</button></p>';
  $('#recovery-back').onclick=()=>loginScreen();
- $('#recovery-complete').onsubmit=e=>{e.preventDefault();commit(e.submitter,'#recovery-complete-error',async()=>{const password=$('#recovery-password').value;if(password!==$('#recovery-confirm').value)throw Error('Las contraseñas no coinciden.');const r=await api('recovery/complete','POST',{token,password});loginScreen();toast(r.message);})};
+ $('#recovery-complete').onsubmit=e=>{e.preventDefault();commit(e.submitter,'#recovery-complete-error',async()=>{const password=$('#recovery-password').value;if(password!==$('#recovery-confirm').value)throw Error('Las contraseñas no coinciden.');const r=await api('recovery/complete','POST',{token,password,...(code?{code}:{})});loginScreen();toast(r.message);})};
 }
 
 function passwordScreen(required=false){
@@ -95,6 +95,7 @@ async function accountScreen(){
  }catch(error){toast(error.message);}
 }
 function recoveryHash(){
+ const params=new URLSearchParams(location.search);if(params.has('code')){recoveryScreen(undefined,params.get('code'));return true;}
  if(location.hash.startsWith('#supabase-recuperar/')){recoveryScreen(location.hash.slice(20));return true;}
  if(location.hash.startsWith('#recuperar/')){recoveryScreen(location.hash.slice(11));return true;}
  if(location.hash.includes('access_token=')||location.hash.includes('error_description=')){

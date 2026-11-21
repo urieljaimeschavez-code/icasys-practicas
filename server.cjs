@@ -278,11 +278,17 @@ async function createApplication({
         return json(200, { enabled: !!identity });
       if (route === "/api/recovery/request" && method === "POST") {
         const b = await body(req);
-        return json(202, recovery.request(b.email, req.socket.remoteAddress));
+        const verifier = identity ? randomBytes(32).toString("hex") : undefined;
+        const result = recovery.request(b.email, req.socket.remoteAddress,verifier);
+        if (verifier) res.setHeader("Set-Cookie",`icasys_recovery=${verifier}; HttpOnly; SameSite=Lax; Path=/; Max-Age=1200${secure?"; Secure":""}`);
+        return json(202, result);
       }
       if (route === "/api/recovery/complete" && method === "POST") {
         const b = await body(req);
-        return json(200, await recovery.complete(b.token, b.password, req.socket.remoteAddress));
+        const verifier = req.headers.cookie?.match(/(?:^|;\s*)icasys_recovery=([a-f0-9]{64})(?:;|$)/)?.[1];
+        const result = await recovery.complete(b.token,b.password,req.socket.remoteAddress,b.code!==undefined?{code:b.code,verifier}:undefined);
+        if (b.code!==undefined) res.setHeader("Set-Cookie",`icasys_recovery=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0${secure?"; Secure":""}`);
+        return json(200,result);
       }
       if (route === "/api/login" && method === "POST") {
         const b = await body(req),
