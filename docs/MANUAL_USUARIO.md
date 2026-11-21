@@ -20,6 +20,18 @@ Las cuentas iniciales son admin@icasys.local, asesor@icasys.local y practicante@
 
 ## 3. Elementos comunes
 
+### Recuperar una contraseña olvidada
+
+En el acceso, **Olvidé mi contraseña** muestra el procedimiento de recuperación asistida. No se envían enlaces por correo: las cuentas de evaluación `@icasys.local` no son buzones reales.
+
+1. El titular solicita ayuda al administrador, quien verifica su identidad.
+2. El administrador entra a **Usuarios → Restablecer contraseña** junto a la cuenta correspondiente.
+3. Escribe y confirma una contraseña temporal de al menos 12 caracteres, con mayúscula, minúscula y número.
+4. La comunica al titular de forma privada. Se cierran las sesiones de la cuenta y se registra el restablecimiento en el historial.
+5. El titular ingresa con la temporal y configura una contraseña nueva obligatoriamente.
+
+No se muestra ni recupera la contraseña anterior. Si el administrador pierde su propio acceso y no existe otra cuenta administradora disponible, debe contactar al responsable técnico de la instalación.
+
 - Inicio: resumen de la estancia, horas y avance.
 - Mis prácticas / Revisar actividades: bitácora con búsqueda por título y filtro de estado.
 - Mis reportes: resumen por estancia y exportaciones.

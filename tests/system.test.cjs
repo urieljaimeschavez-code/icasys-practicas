@@ -88,6 +88,25 @@ test('Sistema de prácticas: autenticación, permisos, flujo y persistencia',asy
    assert.equal((await request('users/other',{user:'admin',method:'PUT',body:{name:'other',email:'other@example.test',active:false}})).status,200);
    assert.equal((await request('state',{user:'other'})).status,401);
   });
+  await t.test('Restablecimiento administrativo: permisos, revocación y cambio obligatorio',async()=>{
+   const temporary='TemporalRecuperacion2026!';
+   const body={name:'outsider',email:'outsider@example.test',active:true,password:temporary};
+   assert.equal((await request('users/outsider',{method:'PUT',body})).status,401);
+   assert.equal((await request('users/outsider',{user:'student',method:'PUT',body})).status,403);
+   assert.equal((await login('outsider')).status,200);const oldSession=sessions.outsider;
+   await login('outsider','incorrecta');await login('outsider','incorrecta');
+   const {digest}=require('../lib/auth.cjs');
+   assert.ok(app.db.prepare('SELECT failures FROM login_attempts WHERE key=?').get(digest('account:outsider@example.test')));
+   assert.equal((await request('users/outsider',{user:'admin',method:'PUT',body})).status,200);
+   sessions.outsider=oldSession;assert.equal((await request('state',{user:'outsider'})).status,401);
+   assert.equal(app.db.prepare('SELECT failures FROM login_attempts WHERE key=?').get(digest('account:outsider@example.test')),undefined);
+   assert.equal((await login('outsider')).status,401);
+   const recovered=await login('outsider',temporary);assert.equal(recovered.status,200);assert.equal(recovered.body.user.must_change,true);
+   assert.equal((await request('state',{user:'outsider'})).status,403);
+   assert.equal((await request('password',{user:'outsider',method:'POST',body:{current:temporary,password}})).status,200);
+   assert.equal((await login('outsider')).status,200);
+   assert.ok((await request('audit',{user:'admin'})).body.some(e=>e.action==='user_password_reset'&&e.entity_id==='outsider'));
+  });
   await t.test('Respaldo íntegro con archivos, datos y contraseñas protegidas',async()=>{
    const target=path.join(directory,'backup.sqlite');await backup(app.db,target);const {DatabaseSync}=require('node:sqlite'),copy=new DatabaseSync(target);
    assert.equal(copy.prepare('SELECT status FROM activities WHERE id=?').get(activity).status,'approved');assert.equal(copy.prepare('SELECT size FROM evidence WHERE activity_id=?').get(activity).size,Buffer.byteLength('Evidencia de prueba'));copy.close();

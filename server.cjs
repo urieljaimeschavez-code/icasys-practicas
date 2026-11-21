@@ -419,6 +419,9 @@ async function createApplication({
               .run(hashPassword(password), key);
           if (password || !b.active)
             await db.prepare("DELETE FROM sessions WHERE user_id=?").run(key);
+          if (password)
+            await db.prepare("DELETE FROM login_attempts WHERE key=?")
+              .run(auth.digest(`account:${target.email}`));
           await audit(
             user,
             password ? "user_password_reset" : "user_updated",
