@@ -1,6 +1,68 @@
 <!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Documentación de prácticas profesionales ICASYS</title><style>
  *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:#14233b;background:#f4f7fc;font:15px/1.75 Arial,sans-serif}aside{width:255px;position:fixed;inset:0 auto 0 0;background:#073570;color:white;padding:35px 24px;overflow:auto}aside strong{font-size:25px}aside p{font-size:13px;color:#c0d5f1}aside a{display:block;padding:11px 0;border-bottom:1px solid #ffffff20;color:#e4eeff;text-decoration:none;font-size:13px}main{margin-left:255px;max-width:1250px;padding:45px 50px}.intro{background:white;border:1px solid #e0e8f5;border-radius:16px;padding:35px;margin-bottom:32px}.intro h1{font-size:32px;line-height:1.25;color:#073570;margin:0 0 20px}article{background:white;padding:40px;border:1px solid #e0e8f5;border-radius:16px;margin-bottom:35px;scroll-margin-top:25px}h1{font-size:28px;line-height:1.35;margin-top:0}h2{font-size:21px;margin-top:35px;color:#073570}h3{font-size:17px;margin-top:28px}p,li{overflow-wrap:anywhere}table{width:100%;border-collapse:collapse;font-size:12px;line-height:1.6;margin:20px 0}th{text-align:left;background:#eef4fc;color:#073570}th,td{border:1px solid #e0e6f0;padding:10px;vertical-align:top}pre{white-space:pre-wrap;overflow-wrap:anywhere;padding:20px;background:#f2f5fa;border-radius:8px;font-size:12px;line-height:1.6}code{font-family:Consolas,monospace}a{color:#0055b8}.section-label{font-size:11px;text-transform:uppercase;color:#647a99;letter-spacing:1.2px;margin-bottom:14px}.intro small{color:#60738f}.note{padding:15px 20px;background:#eff5ff;border-radius:8px}img{max-width:100%}@media(max-width:850px){aside{position:static;width:100%;padding:20px}aside a{display:inline-block;margin-right:15px}main{margin:0;padding:20px}article{padding:24px}}@media print{body{background:white;font-size:10pt}aside{display:none}main{margin:0;padding:0;max-width:none}.intro,article{padding:0;border:0;border-radius:0;box-shadow:none}.intro{margin-bottom:1cm}article{break-before:page}h1,h2,h3{break-after:avoid}tr{break-inside:avoid}pre{font-size:8pt}th,td{padding:6px}a{color:inherit;text-decoration:none}@page{size:A4;margin:1.8cm}}
- </style></head><body><aside><strong>ICASYS</strong><p>Documentación del sistema<br>Versión 3.0 · Noviembre de 2026</p><a href="#estado">Estado actual</a><a href="#nube">Conectar Supabase</a><a href="#auth">Supabase Auth</a><a href="#correo">Alternativa de correo Brevo</a><a href="#usuario">Manual de usuario</a><a href="#instalacion">Instalación y operación</a><a href="#tecnico">Manual técnico</a><a href="#datos">Modelo de datos</a><a href="#pruebas">Requerimientos y pruebas</a><a href="#residencia">Documento base de residencia</a><p>Los documentos fuente editables se encuentran en la carpeta docs.</p></aside><main><section class="intro"><div class="section-label">Proyecto de residencia profesional</div><h1>Documentación del sistema de prácticas profesionales</h1><p>Guías para utilizar, instalar, mantener y evaluar la aplicación con cuentas individuales y base de datos. Incluye el expediente técnico y una base editable para el informe académico.</p><p class="note">Para guardar o imprimir este expediente, usa Ctrl + P y selecciona Guardar como PDF. La versión académica final requiere completar los datos de la institución, el periodo y los asesores.</p><small>Conexión Supabase verificada · 1 de noviembre de 2026</small></section><article id="estado"><div class="section-label">ICASYS · Estado actual</div><h1>Estado de la instalación ICASYS</h1>
+ </style></head><body><aside><strong>ICASYS</strong><p>Documentación del sistema<br>Versión 3.0 · Noviembre de 2026</p><a href="#demo">Datos de demostración</a><a href="#estado">Estado actual</a><a href="#nube">Conectar Supabase</a><a href="#auth">Supabase Auth</a><a href="#correo">Alternativa de correo Brevo</a><a href="#usuario">Manual de usuario</a><a href="#instalacion">Instalación y operación</a><a href="#tecnico">Manual técnico</a><a href="#datos">Modelo de datos</a><a href="#pruebas">Requerimientos y pruebas</a><a href="#residencia">Documento base de residencia</a><p>Los documentos fuente editables se encuentran en la carpeta docs.</p></aside><main><section class="intro"><div class="section-label">Proyecto de residencia profesional</div><h1>Documentación del sistema de prácticas profesionales</h1><p>Guías para utilizar, instalar, mantener y evaluar la aplicación con cuentas individuales y base de datos. Incluye el expediente técnico y una base editable para el informe académico.</p><p class="note">Para guardar o imprimir este expediente, usa Ctrl + P y selecciona Guardar como PDF. La versión académica final requiere completar los datos de la institución, el periodo y los asesores.</p><small>Conexión Supabase verificada · 1 de noviembre de 2026</small></section><article id="demo"><div class="section-label">ICASYS · Datos de demostración</div><h1>Conjunto de datos de demostración</h1>
+<p>Carga realizada y verificada el 21 de noviembre de 2026, por solicitud del residente para presentar el funcionamiento del sistema.</p>
+<h2>Alcance de la carga</h2>
+<p>Se agregaron 42 actividades, 36 revisiones simuladas, 24 evidencias descargables de texto y una estancia histórica. Se conservaron las tres cuentas existentes y sus contraseñas, correos, vinculaciones Auth y perfiles.</p>
+<p>La estancia principal conserva su identificador y configuración original. Se agregaron 30 actividades: 22 aprobadas de seis horas, cuatro en revisión de seis horas, dos con correcciones de cuatro horas y dos borradores de tres horas. Cubren requerimientos, modelado, formularios, evidencias, revisiones, reportes, pruebas, manuales y preparación de la presentación.</p>
+<p>La estancia histórica está identificada como <strong>[Demo] Estancia histórica: soporte y documentación</strong>. Corresponde al mismo practicante y asesor, del 1 de junio al 28 de agosto de 2026. Tiene doce actividades aprobadas que suman la meta de noventa horas y permite demostrar un reporte completo.</p>
+<h2>Estado inmediatamente posterior</h2>
+<table>
+<thead>
+<tr>
+<th>Elemento</th>
+<th align="right">Resultado</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Cuentas</td>
+<td align="right">3, sin modificaciones por esta carga</td>
+</tr>
+<tr>
+<td>Estancias</td>
+<td align="right">2</td>
+</tr>
+<tr>
+<td>Actividades totales</td>
+<td align="right">46</td>
+</tr>
+<tr>
+<td>Actividades de la estancia principal</td>
+<td align="right">34</td>
+</tr>
+<tr>
+<td>Horas aprobadas de la principal</td>
+<td align="right">136</td>
+</tr>
+<tr>
+<td>Horas en revisión de la principal</td>
+<td align="right">26</td>
+</tr>
+<tr>
+<td>Avance de la principal, meta 480 h</td>
+<td align="right">28 % redondeado</td>
+</tr>
+<tr>
+<td>Horas aprobadas de la histórica</td>
+<td align="right">90 de 90</td>
+</tr>
+<tr>
+<td>Archivos de evidencia nuevos</td>
+<td align="right">24</td>
+</tr>
+</tbody></table>
+<p>Los borradores solo los ve el practicante y el administrador, conforme a los permisos del portal. Los conteos pueden cambiar cuando el usuario apruebe, edite o registre actividades después de esta carga.</p>
+<h2>Identificación y trazabilidad</h2>
+<p>Todos los títulos nuevos comienzan con <strong>[Demo]</strong> y las descripciones y archivos indican que son ficticios y no acreditan trabajo ni horas reales. Las aprobaciones y correcciones se identifican expresamente como simuladas; no son decisiones auténticas del asesor. El evento <strong>demo_dataset_loaded</strong> deja constancia de la carga operativa, con actor de sistema.</p>
+<p>Los identificadores nuevos utilizan el prefijo <code>demo-20261121-v1</code>. El generador <code>scripts/demo-data.cjs</code> permite reconocerlos y el comando <code>node scripts/cloud-demo-seed.cjs</code> aplica el conjunto. No crea usuarios ni llama a Supabase Auth.</p>
+<p>La carga es repetible: omite actividades que ya existan y no reemplaza los cambios posteriores de los usuarios. No se deben borrar identidades Auth ni ejecutar cloud:init o cloud:import para cargar ejemplos. Cualquier retiro de los registros de demostración debe planificarse aparte, conservando los registros originales.</p>
+<h2>Verificación realizada</h2>
+<p>Antes de cargar, se guardó una copia privada de las tablas operativas anteriores en <code>data/antes-datos-demo-&lt;fecha&gt;.json</code>. Esa copia incluye referencias a los archivos, no sus contenidos; no sustituye un respaldo completo de PostgreSQL y Storage.</p>
+<p>Después de cargar se compararon los trece registros originales de estancias, actividades, revisiones y evidencias con la copia: permanecieron iguales. Se descargaron las 24 evidencias nuevas y se verificaron su tamaño y SHA-256. El depósito siguió siendo privado.</p>
+<p>Las pruebas de datos verificaron fechas dentro de cada estancia, límites de horas, sumas, distintos estados, repetición sin duplicados y conservación de cuentas y registros anteriores. Estos datos son para la maqueta de evaluación y no deben presentarse como horas reales realizadas por el residente.</p>
+<h2>Cómo mostrar el conjunto</h2>
+<p>Recargar el portal o pulsar Actualizar datos. En Inicio, Mis prácticas y Mis reportes se pueden alternar las dos estancias mediante el selector. Los filtros permiten mostrar registros aprobados, en revisión o con correcciones; una actividad pendiente permite probar una revisión real del portal sobre un ejemplo simulado. Las evidencias se descargan desde Ver detalle.</p>
+</article><article id="estado"><div class="section-label">ICASYS · Estado actual</div><h1>Estado de la instalación ICASYS</h1>
 <p>Actualizado el 1 de noviembre de 2026, hora de Ciudad de México.</p>
 <h2>Instalación conectada</h2>
 <ul>
